@@ -40,6 +40,7 @@
 #endif
 #ifdef WIVRN_USE_VULKAN_ENCODE
 #include "video_encoder_vulkan_h264.h"
+#include "video_encoder_vulkan_h265.h"
 #endif
 
 namespace xrt::drivers::wivrn
@@ -112,8 +113,15 @@ std::unique_ptr<VideoEncoder> VideoEncoder::Create(
 #ifdef WIVRN_USE_VULKAN_ENCODE
 	if (settings.encoder_name == encoder_vulkan)
 	{
-		settings.codec = video_codec::h264;
-		res = video_encoder_vulkan_h264::create(wivrn_vk, settings, fps);
+		switch (settings.codec)
+		{
+			case video_codec::h264:
+				res = video_encoder_vulkan_h264::create(wivrn_vk, settings, fps);
+				break;
+			case video_codec::h265:
+				res = video_encoder_vulkan_h265::create(wivrn_vk, settings, fps);
+				break;
+		}
 	}
 #endif
 #ifdef WIVRN_USE_X264
