@@ -11,6 +11,7 @@ jobs:
         path:
           - 'client'
           - 'server'
+          - 'server-gui'
           - 'common'
     steps:
     - uses: actions/checkout@v4
