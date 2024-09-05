@@ -627,6 +627,15 @@ void application::initialize_actions()
 		if (!profile.available)
 			continue;
 
+		// Patch profile to add palm_ext
+		if (utils::contains(xr_extensions, XR_EXT_PALM_POSE_EXTENSION_NAME)               //
+		    and utils::contains(profile.input_sources, "/user/hand/left/input/grip/pose") //
+		    and not utils::contains(profile.input_sources, "/user/hand/left/palm_ext/pose"))
+		{
+			profile.input_sources.push_back("/user/hand/left/palm_ext/pose");
+			profile.input_sources.push_back("/user/hand/right/palm_ext/pose");
+		}
+
 		suggested_bindings.emplace(profile.profile_name, std::vector<XrActionSuggestedBinding>{});
 
 		for (const std::string & source: profile.input_sources)
@@ -653,10 +662,14 @@ void application::initialize_actions()
 			left_grip_space = xr_session.create_action_space(a);
 		else if (name == "/user/hand/left/input/aim/pose")
 			left_aim_space = xr_session.create_action_space(a);
+		else if (name == "/user/hand/left/palm_ext/pose")
+			left_palm_space = xr_session.create_action_space(a);
 		else if (name == "/user/hand/right/input/grip/pose")
 			right_grip_space = xr_session.create_action_space(a);
 		else if (name == "/user/hand/right/input/aim/pose")
 			right_aim_space = xr_session.create_action_space(a);
+		else if (name == "/user/hand/right/palm_ext/pose")
+			right_palm_space = xr_session.create_action_space(a);
 		else if (name == "/user/eyes_ext/input/gaze_ext/pose")
 			eye_gaze_space = xr_session.create_action_space(a);
 	}
@@ -742,6 +755,7 @@ void application::initialize()
 	opt_extensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
 	opt_extensions.push_back(XR_HTC_PASSTHROUGH_EXTENSION_NAME);
 	opt_extensions.push_back(XR_FB_FACE_TRACKING2_EXTENSION_NAME);
+	opt_extensions.push_back(XR_EXT_PALM_POSE_EXTENSION_NAME);
 
 	for (const auto & i: interaction_profiles)
 	{

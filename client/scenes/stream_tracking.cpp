@@ -150,10 +150,14 @@ static bool enabled(const to_headset::tracking_control & control, device_id id)
 			return control.enabled[size_t(tid::left_aim)];
 		case device_id::LEFT_GRIP:
 			return control.enabled[size_t(tid::left_grip)];
+		case device_id::LEFT_PALM:
+			return control.enabled[size_t(tid::left_palm)];
 		case device_id::RIGHT_AIM:
 			return control.enabled[size_t(tid::right_aim)];
 		case device_id::RIGHT_GRIP:
 			return control.enabled[size_t(tid::right_grip)];
+		case device_id::RIGHT_PALM:
+			return control.enabled[size_t(tid::right_palm)];
 		default:
 			break;
 	}
@@ -191,6 +195,11 @@ void scenes::stream::tracking()
 	        {device_id::LEFT_GRIP, application::left_grip()},
 	        {device_id::RIGHT_AIM, application::right_aim()},
 	        {device_id::RIGHT_GRIP, application::right_grip()}};
+
+	if (XrSpace palm = application::left_palm())
+		spaces.emplace_back(device_id::LEFT_PALM, palm);
+	if (XrSpace palm = application::right_palm())
+		spaces.emplace_back(device_id::RIGHT_PALM, palm);
 
 	if (application::get_eye_gaze_supported())
 		spaces.push_back({device_id::EYE_GAZE, application::eye_gaze()});

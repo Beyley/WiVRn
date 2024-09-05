@@ -120,8 +120,10 @@ class application : public singleton<application>
 	std::vector<std::tuple<XrAction, XrActionType, std::string>> actions;
 	xr::space left_grip_space;
 	xr::space left_aim_space;
+	xr::space left_palm_space;
 	xr::space right_grip_space;
 	xr::space right_aim_space;
+	xr::space right_palm_space;
 	xr::space eye_gaze_space;
 
 	bool hand_tracking_supported = false;
@@ -304,6 +306,10 @@ public:
 	{
 		return instance().left_aim_space;
 	};
+	static XrSpace left_palm()
+	{
+		return instance().left_palm_space;
+	};
 	static XrSpace right_grip()
 	{
 		return instance().right_grip_space;
@@ -311,6 +317,10 @@ public:
 	static XrSpace right_aim()
 	{
 		return instance().right_aim_space;
+	};
+	static XrSpace right_palm()
+	{
+		return instance().right_palm_space;
 	};
 	static XrSpace eye_gaze()
 	{
