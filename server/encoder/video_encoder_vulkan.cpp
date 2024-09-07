@@ -423,7 +423,10 @@ std::optional<xrt::drivers::wivrn::VideoEncoder::data> video_encoder_vulkan::enc
 		        .videoSession = *video_session,
 		        .videoSessionParameters = *video_session_parameters,
 		};
-		video_coding_begin_info.setReferenceSlots(dpb_slots);
+		if (ref_slot)
+			video_coding_begin_info.setReferenceSlots(dpb_slots);
+		else
+			video_coding_begin_info.setReferenceSlots(dpb_slots[slot]);
 		command_buffer.beginVideoCodingKHR(video_coding_begin_info);
 	}
 

@@ -101,7 +101,7 @@ video_encoder_vulkan_h264::video_encoder_vulkan_h264(wivrn_vk_bundle & vk, vk::R
                 .offset_for_top_to_bottom_field = 0,
                 .log2_max_pic_order_cnt_lsb_minus4 = 0,
                 .num_ref_frames_in_pic_order_cnt_cycle = 0,
-                .max_num_ref_frames = 1,
+                .max_num_ref_frames = uint8_t(num_dpb_slots),
                 .reserved1 = 0,
                 .pic_width_in_mbs_minus1 = (rect.extent.width - 1) / 16,
                 .pic_height_in_map_units_minus1 = (rect.extent.height - 1) / 16,
@@ -295,16 +295,10 @@ void * video_encoder_vulkan_h264::encode_info_next(uint32_t frame_num, size_t sl
 	        .pRefList1ModOperations = nullptr,
 	        .pRefPicMarkingOperations = nullptr,
 	};
-	std::fill(reference_lists_info.RefPicList0,
-	          reference_lists_info.RefPicList0 + sizeof(reference_lists_info.RefPicList0),
-	          STD_VIDEO_H264_NO_REFERENCE_PICTURE);
-	std::fill(reference_lists_info.RefPicList1,
-	          reference_lists_info.RefPicList1 + sizeof(reference_lists_info.RefPicList1),
-	          STD_VIDEO_H264_NO_REFERENCE_PICTURE);
+	std::ranges::fill(reference_lists_info.RefPicList0, STD_VIDEO_H264_NO_REFERENCE_PICTURE);
+	std::ranges::fill(reference_lists_info.RefPicList1, STD_VIDEO_H264_NO_REFERENCE_PICTURE);
 	if (ref)
-	{
-		reference_lists_info.RefPicList0[0] = *ref;
-	}
+		reference_lists_info.RefPicList0[0] = 0; // frame_num - *ref - 1;
 
 	std_picture_info = {
 	        .flags =
@@ -321,8 +315,8 @@ void * video_encoder_vulkan_h264::encode_info_next(uint32_t frame_num, size_t sl
 	        .idr_pic_id = idr_id,
 	        .primary_pic_type = ref ? STD_VIDEO_H264_PICTURE_TYPE_P
 	                                : STD_VIDEO_H264_PICTURE_TYPE_IDR,
-	        .frame_num = frame_num,
-	        .PicOrderCnt = 0,
+	        .frame_num = frame_num & ((1 << (sps.log2_max_frame_num_minus4 + 4)) - 1),
+	        .PicOrderCnt = int32_t(frame_num & ((1 << (sps.log2_max_pic_order_cnt_lsb_minus4 + 4)) - 1)),
 	        .temporal_id = 0,
 	        .reserved1 = {},
 	        .pRefLists = &reference_lists_info,
@@ -335,7 +329,8 @@ void * video_encoder_vulkan_h264::encode_info_next(uint32_t frame_num, size_t sl
 	};
 
 	dpb_std_info[slot].primary_pic_type = std_picture_info.primary_pic_type;
-	dpb_std_info[slot].FrameNum = frame_num;
+	dpb_std_info[slot].FrameNum = std_picture_info.frame_num;
+	dpb_std_info[slot].PicOrderCnt = std_picture_info.PicOrderCnt;
 
 	if (not ref)
 		++idr_id;
