@@ -76,7 +76,7 @@ enum class device_id : uint8_t
 	EYE_GAZE,                // /user/eyes_ext/input/gaze_ext/pose
 };
 
-enum video_codec
+enum video_codec : uint8_t
 {
 	h264,
 	h265,

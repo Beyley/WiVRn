@@ -110,7 +110,6 @@ public:
 	deserialization_packet receive_raw();
 	deserialization_packet receive_pending();
 	std::pair<xrt::drivers::wivrn::deserialization_packet, sockaddr_in6> receive_from_raw();
-	void send_raw(const std::vector<uint8_t> & data);
 	void send_raw(const std::vector<std::span<uint8_t>> & data);
 
 	void connect(in6_addr address, int port);

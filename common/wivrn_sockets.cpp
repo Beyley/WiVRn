@@ -339,15 +339,6 @@ xrt::drivers::wivrn::deserialization_packet xrt::drivers::wivrn::UDP::receive_ra
 	return deserialization_packet{buffer, std::span(buffer.get(), mmsgs[0].msg_len)};
 }
 
-void xrt::drivers::wivrn::UDP::send_raw(const std::vector<uint8_t> & data)
-{
-	ssize_t sent = ::send(fd, data.data(), data.size(), 0);
-	if (sent < 0)
-		throw std::system_error{errno, std::generic_category()};
-
-	bytes_sent_ += sent;
-}
-
 void xrt::drivers::wivrn::UDP::send_raw(const std::vector<std::span<uint8_t>> & data)
 {
 	thread_local std::vector<iovec> spans;
