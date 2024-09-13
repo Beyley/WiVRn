@@ -132,6 +132,7 @@ main_window::main_window()
 
 	connect(ui->button_start, &QPushButton::clicked, this, &main_window::start_server);
 	connect(ui->button_stop, &QPushButton::clicked, this, &main_window::stop_server);
+	connect(ui->button_settings, &QPushButton::clicked, this, &main_window::on_action_settings);
 	connect(ui->button_restart, &QPushButton::clicked, this, &main_window::restart_server);
 	connect(ui->button_disconnect, &QPushButton::clicked, this, &main_window::disconnect_client);
 

@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_stopped">
        <property name="sizePolicy">
@@ -190,6 +190,16 @@
                 <property name="icon">
                  <iconset theme="view-refresh">
                   <normaloff>.</normaloff>.</iconset>
+                </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignVCenter">
+               <widget class="QPushButton" name="button_settings">
+                <property name="text">
+                 <string>Settings</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="preferences-system-symbolic"/>
                 </property>
                </widget>
               </item>
@@ -506,8 +516,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>876</width>
-             <height>359</height>
+             <width>864</width>
+             <height>377</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout">
@@ -693,7 +703,7 @@
      <x>0</x>
      <y>0</y>
      <width>900</width>
-     <height>34</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
