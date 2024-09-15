@@ -16,16 +16,145 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="bitrate_label">
+       <property name="text">
+        <string>Bitrate</string>
+       </property>
+       <property name="buddy">
+        <cstring>bitrate</cstring>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0">
+      <widget class="QRadioButton" name="radio_auto_foveation">
+       <property name="text">
+        <string>Auto&amp;matically choose foveation strength</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">group_foveation</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="2">
+      <widget class="QDoubleSpinBox" name="bitrate">
+       <property name="suffix">
+        <string> Mbit/s</string>
+       </property>
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="minimum">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>200.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QSpinBox" name="spin_foveation">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="readOnly">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string> %</string>
+       </property>
+       <property name="maximum">
+        <number>80</number>
+       </property>
+       <property name="value">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Weaker</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Stronger</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="2">
+      <widget class="QSlider" name="slider_foveation">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>80</number>
+       </property>
+       <property name="value">
+        <number>20</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TickPosition::TicksBelow</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QLabel" name="label_foveation">
+        <widget class="QRadioButton" name="radio_manual_foveation">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Foveation strength</string>
+          <string>Manuall&amp;y choose foveation strength</string>
          </property>
+         <attribute name="buttonGroup">
+          <string notr="true">group_foveation</string>
+         </attribute>
         </widget>
        </item>
        <item>
@@ -59,113 +188,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="1" column="2">
-      <widget class="QSlider" name="slider_foveation">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="statusTip">
-        <string/>
-       </property>
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>80</number>
-       </property>
-       <property name="value">
-        <number>20</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="tickPosition">
-        <enum>QSlider::TickPosition::TicksBelow</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="bitrate_label">
-       <property name="text">
-        <string>Bitrate</string>
-       </property>
-       <property name="buddy">
-        <cstring>bitrate</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QSpinBox" name="spin_foveation">
-       <property name="readOnly">
-        <bool>false</bool>
-       </property>
-       <property name="suffix">
-        <string> %</string>
-       </property>
-       <property name="maximum">
-        <number>80</number>
-       </property>
-       <property name="value">
-        <number>20</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" colspan="2">
-      <widget class="QDoubleSpinBox" name="bitrate">
-       <property name="suffix">
-        <string> Mbit/s</string>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="minimum">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>200.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>100.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Weaker</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Stronger</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -363,8 +385,11 @@
  </customwidgets>
  <tabstops>
   <tabstop>bitrate</tabstop>
+  <tabstop>radio_auto_foveation</tabstop>
+  <tabstop>radio_manual_foveation</tabstop>
   <tabstop>slider_foveation</tabstop>
   <tabstop>spin_foveation</tabstop>
+  <tabstop>checkbox_automatic_encoder_config</tabstop>
   <tabstop>encoder</tabstop>
   <tabstop>codec</tabstop>
  </tabstops>
@@ -409,12 +434,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>748</x>
-     <y>63</y>
+     <x>836</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
-     <x>874</x>
-     <y>68</y>
+     <x>908</x>
+     <y>105</y>
     </hint>
    </hints>
   </connection>
@@ -425,14 +450,49 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>872</x>
-     <y>53</y>
+     <x>908</x>
+     <y>105</y>
     </hint>
     <hint type="destinationlabel">
-     <x>702</x>
-     <y>55</y>
+     <x>836</x>
+     <y>100</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radio_manual_foveation</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>slider_foveation</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>169</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>89</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radio_manual_foveation</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_foveation</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>80</x>
+     <y>90</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>869</x>
+     <y>90</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="group_foveation"/>
+ </buttongroups>
 </ui>

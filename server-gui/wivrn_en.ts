@@ -169,59 +169,68 @@
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="24"/>
+        <location filename="settings.ui" line="150"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="27"/>
         <source>Foveation strength</source>
-        <translation>Foveation strength</translation>
+        <translation type="vanished">Foveation strength</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="96"/>
+        <location filename="settings.ui" line="22"/>
         <source>Bitrate</source>
         <oldsource>Bi&amp;trate</oldsource>
         <translation>Bitrate</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="143"/>
+        <location filename="settings.ui" line="32"/>
+        <source>Auto&amp;matically choose foveation strength</source>
+        <translation>Auto&amp;matically choose foveation strength</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="85"/>
         <source>Weaker</source>
         <translation>Weaker</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="163"/>
+        <location filename="settings.ui" line="105"/>
         <source>Stronger</source>
         <translation>Stronger</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="177"/>
+        <location filename="settings.ui" line="153"/>
+        <source>Manuall&amp;y choose foveation strength</source>
+        <translation>Manuall&amp;y choose foveation strength</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="199"/>
         <source>Automatic encoder configuration</source>
         <translation>Automatic encoder configuration</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="238"/>
+        <location filename="settings.ui" line="260"/>
         <source>Encoder</source>
         <translation>Encoder</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="255"/>
-        <location filename="settings.ui" line="285"/>
+        <location filename="settings.ui" line="277"/>
+        <location filename="settings.ui" line="307"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="222"/>
+        <location filename="settings.ui" line="244"/>
         <source>Codec</source>
         <translation>Codec</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="122"/>
+        <location filename="settings.ui" line="45"/>
         <source> Mbit/s</source>
         <translation> Mbit/s</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="109"/>
+        <location filename="settings.ui" line="70"/>
         <source> %</source>
         <translation> %</translation>
     </message>
@@ -293,7 +302,7 @@
 <context>
     <name>settings</name>
     <message>
-        <location filename="settings.cpp" line="294"/>
+        <location filename="settings.cpp" line="304"/>
         <source>Not all headsets support AV1
 </source>
         <translation>Not all headsets support AV1

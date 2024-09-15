@@ -161,8 +161,18 @@ settings::settings(main_window * parent) :
 	ui->partitionner->set_rectangles_data(encoder_config);
 	ui->partitionner->set_selected_index(0);
 
-	ui->slider_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
-	ui->spin_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
+	if (json_doc["scale"].isDouble())
+	{
+		ui->slider_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
+		ui->spin_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
+		ui->radio_auto_foveation->setChecked(false);
+		ui->radio_manual_foveation->setChecked(true);
+	}
+	else
+	{
+		ui->radio_auto_foveation->setChecked(true);
+		ui->radio_manual_foveation->setChecked(false);
+	}
 	ui->bitrate->setValue(json_doc["bitrate"].toDouble(50'000'000) / 1'000'000);
 
 	selected_rectangle_changed(0);
@@ -178,7 +188,7 @@ settings::settings(main_window * parent) :
 	connect(ui->slider_foveation, &QSlider::valueChanged, this, &settings::on_settings_changed);
 	connect(ui->spin_foveation, &QSpinBox::valueChanged, this, &settings::on_settings_changed);
 
-	connect(ui->foveation_info, &QPushButton::clicked, this, [&]() { QToolTip::showText(ui->label_foveation->pos(), ui->label_foveation->toolTip(), ui->label_foveation); });
+	connect(ui->foveation_info, &QPushButton::clicked, this, [&]() { QToolTip::showText(ui->radio_manual_foveation->pos(), ui->radio_manual_foveation->toolTip(), ui->radio_manual_foveation); });
 
 	connect(this, &QDialog::accepted, this, &settings::save_settings);
 
@@ -310,7 +320,18 @@ void settings::selected_rectangle_changed(int index)
 void settings::save_settings()
 {
 	QJsonObject json = json_doc.object();
-	json["scale"] = 1 - ui->slider_foveation->value() / 100.0;
+
+	if (ui->radio_auto_foveation->isChecked())
+	{
+		auto it = json.find("scale");
+		if (it != json.end())
+			json.erase(it);
+	}
+	else
+	{
+		json["scale"] = 1 - ui->slider_foveation->value() / 100.0;
+	}
+
 	json["bitrate"] = ui->bitrate->value() * 1'000'000;
 
 	QJsonArray encoders;
