@@ -24,7 +24,11 @@
 
 #include <QFile>
 #include <QJsonObject>
+#include <QPainter>
+#include <QStandardItemModel>
 #include <QStandardPaths>
+#include <QToolTip>
+
 #include <iostream>
 #include <string>
 #include <utility>
@@ -32,7 +36,7 @@
 
 namespace
 {
-// Must match the order in the combo boxes
+// The index must match the order in the combo boxes
 const std::vector<std::pair<int, std::string>> encoder_ids{
         {0, "auto"},
         {1, "nvenc"},
@@ -46,6 +50,23 @@ const std::vector<std::pair<int, std::string>> codec_ids{
         {1, "avc"},
         {2, "h265"},
         {3, "av1"},
+};
+
+const std::vector<std::pair<int, int>> compatible_combos{
+        // Automatically chosen encoder
+        {0, 0},
+        // nvenc
+        {1, 0},
+        {1, 1},
+        {1, 2},
+        // {1, 3},
+        // vaapi
+        {2, 0},
+        {2, 1},
+        {2, 2},
+        {2, 3},
+        // x264
+        {3, 1},
 };
 
 int encoder_id_from_string(std::string_view s)
@@ -103,8 +124,8 @@ settings::settings(main_window * parent) :
 	QJsonParseError error;
 	json_doc = QJsonDocument::fromJson(parent->get_configuration().toUtf8(), &error);
 
-	QList<QRectF> rectangles;
-	QList<QVariant> encoder_config;
+	std::vector<QRectF> rectangles;
+	std::vector<QVariant> encoder_config;
 
 	if (error.error)
 	{
@@ -129,6 +150,8 @@ settings::settings(main_window * parent) :
 
 	if (rectangles.empty())
 	{
+		ui->checkbox_automatic_encoder_config->setChecked(true);
+
 		rectangles.push_back(QRectF(0, 0, 1, 1));
 		std::pair<std::string, std::string> config{"auto", "auto"};
 		encoder_config.push_back(QVariant::fromValue(config));
@@ -138,7 +161,8 @@ settings::settings(main_window * parent) :
 	ui->partitionner->set_rectangles_data(encoder_config);
 	ui->partitionner->set_selected_index(0);
 
-	ui->scale->setValue(json_doc["scale"].toDouble(1) * 100);
+	ui->slider_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
+	ui->spin_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
 	ui->bitrate->setValue(json_doc["bitrate"].toDouble(50'000'000) / 1'000'000);
 
 	selected_rectangle_changed(0);
@@ -146,18 +170,92 @@ settings::settings(main_window * parent) :
 	connect(ui->partitionner, &rectangle_partitionner::selected_index_change, this, &settings::selected_rectangle_changed);
 	// connect(ui->partitionner, &rectangle_partitionner::rectangles_change, this, [](){});
 
+	connect(ui->encoder, &QComboBox::currentIndexChanged, this, &settings::on_encoder_changed);
 	connect(ui->encoder, &QComboBox::currentIndexChanged, this, &settings::on_settings_changed);
+	connect(ui->checkbox_automatic_encoder_config, &QCheckBox::clicked, this, &settings::on_auto_encoder_config_changed);
 	connect(ui->codec, &QComboBox::currentIndexChanged, this, &settings::on_settings_changed);
 	connect(ui->bitrate, &QDoubleSpinBox::valueChanged, this, &settings::on_settings_changed);
-	connect(ui->scale, &QDoubleSpinBox::valueChanged, this, &settings::on_settings_changed);
+	connect(ui->slider_foveation, &QSlider::valueChanged, this, &settings::on_settings_changed);
+	connect(ui->spin_foveation, &QSpinBox::valueChanged, this, &settings::on_settings_changed);
+
+	connect(ui->foveation_info, &QPushButton::clicked, this, [&]() { QToolTip::showText(ui->label_foveation->pos(), ui->label_foveation->toolTip(), ui->label_foveation); });
 
 	connect(this, &QDialog::accepted, this, &settings::save_settings);
+
+	ui->partitionner->set_paint([&](QPainter & painter, QRect rect, const QVariant & data, int index, bool selected) {
+		if (selected)
+		{
+			painter.fillRect(rect.adjusted(1, 1, 0, 0), QColorConstants::Cyan);
+		}
+
+		auto [encoder_id, codec_id] = data.value<std::pair<int, int>>();
+
+		QString codec = ui->codec->itemText(codec_id);
+		QString encoder = ui->encoder->itemText(encoder_id);
+
+		QFont font = painter.font();
+		QFont font2 = font;
+
+		font2.setPixelSize(24);
+
+		QString text = QString("%1\n%2").arg(encoder, codec);
+
+		QFontMetrics metrics{font2};
+		QSize size = metrics.size(0, text);
+
+		if (double ratio = std::max((double)size.width() / rect.width(), (double)size.height() / rect.height()); ratio > 1)
+			font2.setPixelSize(font2.pixelSize() / ratio);
+
+		painter.setFont(font2);
+		painter.drawText(rect, Qt::AlignCenter, text);
+		painter.setFont(font);
+	});
+
+	// Enable/disable the encoder configuration widgets
+	on_auto_encoder_config_changed();
+
+	// Update the compatible codecs
+	on_encoder_changed();
+
+	// Update the status text
+	on_settings_changed();
 }
 
 settings::~settings()
 {
 	delete ui;
 	ui = nullptr;
+}
+
+void settings::on_auto_encoder_config_changed()
+{
+	bool checked = ui->checkbox_automatic_encoder_config->isChecked();
+	ui->partitionner->setDisabled(checked);
+	ui->encoder->setDisabled(checked);
+	ui->codec->setDisabled(checked);
+}
+
+void settings::on_encoder_changed()
+{
+	int encoder = ui->encoder->currentIndex();
+
+	QStandardItemModel * model = qobject_cast<QStandardItemModel *>(ui->codec->model());
+	assert(model);
+
+	for (int i = 0, n = model->rowCount(); i < n; i++)
+	{
+		auto * item = model->item(i);
+		item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+	}
+
+	for (auto [i, j]: compatible_combos)
+	{
+		if (encoder == i)
+		{
+			auto * item = model->item(j);
+			item->setFlags(item->flags() | Qt::ItemIsEnabled);
+		}
+	}
 }
 
 void settings::on_settings_changed()
@@ -167,9 +265,28 @@ void settings::on_settings_changed()
 	int encoder = ui->encoder->currentIndex();
 	int codec = ui->codec->currentIndex();
 
-	if (encoder == 3 /* x264 */ and codec != 1 /* H264 */ and codec != 0 /* auto */)
+	bool compatible = false;
+
+	for (auto [i, j]: compatible_combos)
 	{
-		status += tr("x264 only supports H264\n");
+		if (encoder == i and codec == j)
+		{
+			compatible = true;
+			break;
+		}
+	}
+
+	if (!compatible)
+	{
+		// Find a compatible codec for this encoder
+		for (auto [i, j]: compatible_combos)
+		{
+			if (encoder == i)
+			{
+				codec = j;
+				ui->codec->setCurrentIndex(j);
+			}
+		}
 	}
 
 	if (codec == 3 /* av1 */)
@@ -193,29 +310,32 @@ void settings::selected_rectangle_changed(int index)
 void settings::save_settings()
 {
 	QJsonObject json = json_doc.object();
-	json["scale"] = ui->scale->value() / 100;
+	json["scale"] = 1 - ui->slider_foveation->value() / 100.0;
 	json["bitrate"] = ui->bitrate->value() * 1'000'000;
 
 	QJsonArray encoders;
 
-	const auto & rect = ui->partitionner->rectangles();
-	const auto & data = ui->partitionner->rectangles_data();
-
-	for (int i = 0, n = rect.size(); i < n; i++)
+	if (not ui->checkbox_automatic_encoder_config->isChecked())
 	{
-		QJsonObject encoder;
-		auto [encoder_id, codec_id] = data[i].value<std::pair<int, int>>();
+		const auto & rect = ui->partitionner->rectangles();
+		const auto & data = ui->partitionner->rectangles_data();
 
-		encoder["encoder"] = QString::fromLatin1(encoder_from_id(encoder_id));
-		encoder["codec"] = QString::fromLatin1(codec_from_id(codec_id));
-		encoder["width"] = rect[i].width();
-		encoder["height"] = rect[i].height();
-		encoder["offset_x"] = rect[i].x();
-		encoder["offset_y"] = rect[i].y();
+		for (int i = 0, n = rect.size(); i < n; i++)
+		{
+			QJsonObject encoder;
+			auto [encoder_id, codec_id] = data[i].value<std::pair<int, int>>();
 
-		// TODO encoder groups
+			encoder["encoder"] = QString::fromLatin1(encoder_from_id(encoder_id));
+			encoder["codec"] = QString::fromLatin1(codec_from_id(codec_id));
+			encoder["width"] = rect[i].width();
+			encoder["height"] = rect[i].height();
+			encoder["offset_x"] = rect[i].x();
+			encoder["offset_y"] = rect[i].y();
 
-		encoders.push_back(encoder);
+			// TODO encoder groups
+
+			encoders.push_back(encoder);
+		}
 	}
 
 	json["encoders"] = encoders;

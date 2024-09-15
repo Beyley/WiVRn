@@ -19,9 +19,9 @@
 #pragma once
 
 #include <QFrame>
-#include <QList>
 #include <QRectF>
 #include <QVariant>
+#include <vector>
 
 struct rectangle_partitionner_private;
 
@@ -37,12 +37,14 @@ public:
 	rectangle_partitionner & operator=(const rectangle_partitionner &) = delete;
 	~rectangle_partitionner();
 
-	using rectangle_list = QList<QRectF>;
-	using data_list = QList<QVariant>;
+	using rectangle_list = std::vector<QRectF>;
+	using data_list = std::vector<QVariant>;
+	using paint_function = std::function<void(QPainter & painter, QRect rect, const QVariant & data, int index, bool selected)>;
 
 	Q_PROPERTY(rectangle_list rectangles READ rectangles WRITE set_rectangles NOTIFY rectangles_change)
 	Q_PROPERTY(data_list rectangles_data READ rectangles_data WRITE set_rectangles_data)
 	Q_PROPERTY(int selected_index READ selected_index WRITE set_selected_index NOTIFY selected_index_change)
+	Q_PROPERTY(paint_function paint READ paint WRITE set_paint)
 
 	const rectangle_list & rectangles() const
 	{
@@ -64,10 +66,16 @@ public:
 		return m_rectangles_data.at(index);
 	}
 
+	const paint_function & paint() const
+	{
+		return m_paint;
+	}
+
 	void set_rectangles(const rectangle_list &);
 	void set_rectangles_data(const data_list &);
 	void set_rectangles_data(int, QVariant);
 	void set_selected_index(int);
+	void set_paint(paint_function paint);
 
 signals:
 	void selected_index_change(int);
@@ -75,15 +83,19 @@ signals:
 
 protected:
 	rectangle_list m_rectangles;
-	rectangle_list rectangles_position;
+	std::vector<QRect> rectangles_position;
 	int m_selected_index = 0;
 	data_list m_rectangles_data;
+	paint_function m_paint;
 
 	void paintEvent(QPaintEvent * event) override;
 	void resizeEvent(QResizeEvent * event) override;
 	void mouseMoveEvent(QMouseEvent * event) override;
 	void mousePressEvent(QMouseEvent * event) override;
 	void mouseReleaseEvent(QMouseEvent * event) override;
+	void leaveEvent(QEvent * event) override;
+
+	void keyPressEvent(QKeyEvent * event) override;
 
 private:
 	void update_rectangles_position();

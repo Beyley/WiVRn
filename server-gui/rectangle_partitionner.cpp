@@ -19,12 +19,17 @@
 #include "rectangle_partitionner.h"
 
 #include <QColor>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPalette>
 #include <QStyleOptionFocusRect>
 
+#include <chrono>
 #include <cmath>
+#include <fstream>
 #include <limits>
 
 namespace
@@ -47,15 +52,54 @@ struct edge
 		return edge_side == other.edge_side and rectangle_index == other.rectangle_index;
 	}
 
-	double position = 0;
-	double min = std::numeric_limits<double>::max();
-	double max = std::numeric_limits<double>::lowest();
+	int position = 0;
+	int min = std::numeric_limits<int>::max();
+	int max = std::numeric_limits<int>::lowest();
+};
+} // namespace
+
+struct rectangle_partitionner_private
+{
+	std::vector<edge> selection;
+	std::vector<edge> hovered;
+
+	int min_drag_position;
+	int max_drag_position;
+
+	QLine split_line;
+
+	enum class mouse_event_type
+	{
+		move,
+		press,
+		release
+	};
+
+	// Used for replay
+	std::vector<std::pair<mouse_event_type, QMouseEvent *>> events;
+	QSize initial_size;
+
+	std::vector<QRectF> rectangles_float;
+	std::vector<QRect> rectangles_int;
+
+	rectangle_partitionner_private() = default;
+	rectangle_partitionner_private(const rectangle_partitionner_private &) = delete;
+	rectangle_partitionner_private & operator=(const rectangle_partitionner_private &) = delete;
+	~rectangle_partitionner_private()
+	{
+		for (auto [i, j]: events)
+		{
+			delete j;
+		}
+	}
 };
 
-int hovered_rectangle(QPointF position, QList<QRectF> rectangles)
+namespace
+{
+int hovered_rectangle(QPoint position, std::vector<QRect> rectangles)
 {
 	int n = 0;
-	for (QRectF & i: rectangles)
+	for (const QRect & i: rectangles)
 	{
 		if (i.contains(position))
 			return n;
@@ -65,15 +109,15 @@ int hovered_rectangle(QPointF position, QList<QRectF> rectangles)
 	return -1;
 }
 
-Qt::CursorShape get_cursor_shape(QPointF position, QRectF bounding_box, QList<QRectF> rectangles, double margin_move_edges, double margin_split_edges)
+Qt::CursorShape get_cursor_shape(QPointF position, QRect bounding_box, std::vector<QRect> rectangles, int margin_move_edges, int margin_split_edges)
 {
 	bounding_box.adjust(margin_move_edges, margin_move_edges, -margin_move_edges, -margin_move_edges);
 
-	for (QRectF & i: rectangles)
+	for (QRect & i: rectangles)
 	{
-		if (i.contains(position))
+		if (i.contains(position.toPoint()))
 		{
-			QPointF rel_pos = position - i.topLeft();
+			QPoint rel_pos = position.toPoint() - i.topLeft();
 			double dx = std::min(rel_pos.x(), i.width() - rel_pos.x());
 			double dy = std::min(rel_pos.y(), i.height() - rel_pos.y());
 
@@ -95,7 +139,7 @@ Qt::CursorShape get_cursor_shape(QPointF position, QRectF bounding_box, QList<QR
 	return Qt::ArrowCursor;
 }
 
-std::vector<edge> horizontal_edges(QRectF bounding_box, QList<QRectF> rectangles)
+std::vector<edge> horizontal_edges(QRect bounding_box, std::vector<QRect> rectangles)
 {
 	std::vector<edge> edges;
 
@@ -115,7 +159,7 @@ std::vector<edge> horizontal_edges(QRectF bounding_box, QList<QRectF> rectangles
 	return edges;
 }
 
-std::vector<edge> vertical_edges(QRectF bounding_box, QList<QRectF> rectangles)
+std::vector<edge> vertical_edges(QRect bounding_box, std::vector<QRect> rectangles)
 {
 	std::vector<edge> edges;
 
@@ -135,20 +179,20 @@ std::vector<edge> vertical_edges(QRectF bounding_box, QList<QRectF> rectangles)
 	return edges;
 }
 
-std::vector<std::vector<edge>> partition_edges(std::vector<edge> edges, double margin = 0.001)
+std::vector<std::vector<edge>> partition_edges(std::vector<edge> edges)
 {
-	auto comp = [margin](const edge & a, const edge & b) {
-		if (a.position < b.position - margin)
+	auto comp = [](const edge & a, const edge & b) {
+		if (a.position < b.position)
 			return true;
-		if (a.position > b.position + margin)
+		if (a.position > b.position)
 			return false;
 
-		if (a.min < b.min - margin)
+		if (a.min < b.min)
 			return true;
-		if (a.min > b.min + margin)
+		if (a.min > b.min)
 			return false;
 
-		if (a.max < b.max - margin)
+		if (a.max < b.max)
 			return true;
 		return false;
 	};
@@ -157,12 +201,12 @@ std::vector<std::vector<edge>> partition_edges(std::vector<edge> edges, double m
 
 	std::vector<std::vector<edge>> partitionned;
 
-	double current_position = nan("");
-	double current_max = 0;
+	int current_position = std::numeric_limits<int>::lowest();
+	int current_max = 0;
 
 	for (auto & e: edges)
 	{
-		if (std::abs(e.position - current_position) > margin)
+		if (e.position != current_position)
 		{
 			current_position = e.position;
 			current_max = e.max;
@@ -191,7 +235,7 @@ std::vector<std::vector<edge>> partition_edges(std::vector<edge> edges, double m
 std::vector<edge> hovered_edges(QPointF position, const std::vector<std::vector<edge>> & partitionned_edges, bool horizontal)
 {
 	if (horizontal)
-		std::swap(position.rx(), position.ry());
+		position = position.transposed();
 
 	for (const auto & edge_list: partitionned_edges)
 	{
@@ -208,15 +252,143 @@ std::vector<edge> hovered_edges(QPointF position, const std::vector<std::vector<
 	return {};
 }
 
-} // namespace
-
-struct rectangle_partitionner_private
+bool assert_rectangle_list_is_partition(QRect bounding_box, const std::vector<QRect> & rectangles)
 {
-	std::vector<edge> selection;
+	bool ok = true;
 
-	double min_drag_position;
-	double max_drag_position;
-};
+	for (const auto & i: rectangles)
+		if (not i.isValid())
+		{
+			qDebug() << "Invalid rectangle" << i;
+			ok = false;
+		}
+
+	for (int y = bounding_box.top(); y < bounding_box.bottom(); ++y)
+	{
+		std::vector<std::pair<int, int>> horizontal_segments;
+		for (const auto & i: rectangles)
+		{
+			if (y >= i.top() and y < i.bottom())
+				horizontal_segments.emplace_back(i.left(), i.right());
+		}
+
+		std::ranges::sort(horizontal_segments);
+
+		if (horizontal_segments.empty())
+		{
+			qDebug() << "Line" << y << "empty";
+			ok = false;
+		}
+
+		if (horizontal_segments.front().first != bounding_box.left())
+		{
+			qDebug() << "Line" << y << "does not start at the left of the bounding box";
+			ok = false;
+		}
+
+		if (horizontal_segments.back().second != bounding_box.right())
+		{
+			qDebug() << "Last rectangle of line" << y << "does not end at the right of the bounding box";
+			ok = false;
+		}
+
+		for (int i = 1; i < horizontal_segments.size(); ++i)
+		{
+			if (horizontal_segments[i - 1].second < horizontal_segments[i].first)
+			{
+				qDebug() << "Overlap in line" << y;
+				ok = false;
+			}
+			else if (horizontal_segments[i - 1].second > horizontal_segments[i].first)
+			{
+				qDebug() << "Gap in line" << y;
+				ok = false;
+			}
+		}
+	}
+
+	if (!ok)
+	{
+		qDebug() << "Bounding box:" << bounding_box;
+		int n = 1;
+		for (auto & i: rectangles)
+		{
+			qDebug() << "Rectangle" << (n++) << ":" << i.topLeft() << "-" << i.bottomRight();
+		}
+	}
+
+	return ok;
+}
+
+void dump_events(rectangle_partitionner_private & p)
+{
+	QJsonObject doc;
+
+	QJsonArray initial_size;
+	initial_size.push_back(p.initial_size.width());
+	initial_size.push_back(p.initial_size.height());
+	doc["initial_size"] = initial_size;
+
+	QJsonArray rectangles_float;
+	for (QRectF & i: p.rectangles_float)
+	{
+		QJsonObject obj;
+		obj["x"] = i.x();
+		obj["y"] = i.y();
+		obj["w"] = i.width();
+		obj["h"] = i.height();
+		rectangles_float.push_back(obj);
+	}
+	doc["rectangles_float"] = rectangles_float;
+
+	QJsonArray rectangles_int;
+	for (QRect & i: p.rectangles_int)
+	{
+		QJsonObject obj;
+		obj["x"] = i.x();
+		obj["y"] = i.y();
+		obj["w"] = i.width();
+		obj["h"] = i.height();
+		rectangles_float.push_back(obj);
+	}
+	doc["rectangles_int"] = rectangles_int;
+
+	QJsonArray events;
+	for (auto & [i, j]: p.events)
+	{
+		QJsonObject obj;
+		switch (i)
+		{
+			case rectangle_partitionner_private::mouse_event_type::move:
+				obj["type"] = "move";
+				obj["x"] = j->position().x();
+				obj["y"] = j->position().y();
+				obj["buttons"] = (int)j->buttons();
+				rectangles_float.push_back(obj);
+				break;
+			case rectangle_partitionner_private::mouse_event_type::press:
+				obj["type"] = "press";
+				obj["x"] = j->position().x();
+				obj["y"] = j->position().y();
+				obj["buttons"] = (int)j->buttons();
+				rectangles_float.push_back(obj);
+				break;
+			case rectangle_partitionner_private::mouse_event_type::release:
+				obj["type"] = "release";
+				obj["x"] = j->position().x();
+				obj["y"] = j->position().y();
+				obj["buttons"] = (int)j->buttons();
+				rectangles_float.push_back(obj);
+				break;
+		}
+	}
+	doc["events"] = events;
+
+	std::ofstream f("events.json");
+	f << QString::fromUtf8(QJsonDocument(doc).toJson()).toStdString();
+}
+
+} // namespace
 
 rectangle_partitionner::rectangle_partitionner(QWidget * parent) :
         QFrame(parent)
@@ -227,17 +399,22 @@ rectangle_partitionner::rectangle_partitionner(QWidget * parent) :
 	p = new rectangle_partitionner_private;
 
 	setMouseTracking(true);
+	// setFocusPolicy(Qt::FocusPolicy::ClickFocus);
 
-	QList<QRectF> encoders;
+	std::vector<QRectF> encoders;
 
 	encoders.push_back(QRectF{0, 0, 1, 1});
 	set_rectangles(encoders);
 
-	auto r = frameRect();
-	r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
+	m_paint = [](QPainter & painter, QRect rect, const QVariant & data, int index, bool selected) {
+		if (selected)
+		{
+			painter.fillRect(rect.adjusted(1, 1, 0, 0), QColorConstants::Cyan);
+		}
 
-	auto horz_partitionned = partition_edges(horizontal_edges(r, rectangles_position));
-	auto vert_partitionned = partition_edges(vertical_edges(r, rectangles_position));
+		QString text = QString("%1").arg(index + 1);
+		painter.drawText(rect, Qt::AlignCenter, text);
+	};
 }
 
 rectangle_partitionner::~rectangle_partitionner()
@@ -251,34 +428,85 @@ void rectangle_partitionner::paintEvent(QPaintEvent * event)
 
 	QPainter painter(this);
 
-	int n = 0;
-	for (QRectF & i: rectangles_position)
+	if (m_paint)
 	{
-		painter.drawRect(i);
-		if (n == m_selected_index)
+		int n = 0;
+		for (QRect & i: rectangles_position)
 		{
-			painter.fillRect(i.adjusted(1, 1, 0, 0), QColorConstants::Cyan);
-		}
+			painter.drawRect(i);
+			bool is_selected = n == m_selected_index and isEnabled();
+			m_paint(painter, i, m_rectangles_data[n], n, is_selected);
 
-		// TODO custom text
-		QString text = QString("%1").arg(++n);
-		painter.drawText(i, Qt::AlignCenter, text);
+			n++;
+		}
+	}
+
+	if (not p->hovered.empty() and p->selection.empty())
+	{
+		painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+		QList<QLine> lines;
+		for (const edge & i: p->hovered)
+		{
+			switch (i.edge_side)
+			{
+				case side::top:
+				case side::bottom:
+					lines.emplace_back(QLine(i.min, i.position, i.max, i.position));
+					break;
+
+				case side::left:
+				case side::right:
+					lines.emplace_back(QLine(i.position, i.min, i.position, i.max));
+					break;
+			}
+		}
+		painter.drawLines(lines);
+
+		auto r = frameRect();
+		r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
+		auto horz_partitionned = partition_edges(horizontal_edges(r, rectangles_position));
+		auto vert_partitionned = partition_edges(vertical_edges(r, rectangles_position));
+	}
+	else if (cursor() == Qt::SplitHCursor or cursor() == Qt::SplitVCursor and not p->split_line.isNull())
+	{
+		auto now = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now().time_since_epoch()).count();
+
+		QPen pen(Qt::black, 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
+		pen.setDashPattern({5, 5});
+		pen.setDashOffset(-now * 15);
+		painter.setPen(pen);
+
+		painter.drawLine(p->split_line);
+		update();
 	}
 }
 
 void rectangle_partitionner::resizeEvent(QResizeEvent * event)
 {
 	update_rectangles_position();
+
+	p->rectangles_float = m_rectangles;
+	p->rectangles_int = rectangles_position;
+	p->initial_size = event->size();
+	for (auto [i, j]: p->events)
+		delete j;
+	p->events.clear();
 }
 
 void rectangle_partitionner::mouseMoveEvent(QMouseEvent * event)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
+	if (event->buttons() != Qt::NoButton)
+		p->events.emplace_back(rectangle_partitionner_private::mouse_event_type::move, event->clone());
+
 	auto r = frameRect();
 	r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
 
 	if (not p->selection.empty())
 	{
-		double position;
+		int position;
 
 		if (p->selection.front().edge_side == side::top or p->selection.front().edge_side == side::bottom)
 			position = event->position().y();
@@ -292,40 +520,93 @@ void rectangle_partitionner::mouseMoveEvent(QMouseEvent * event)
 			switch (e.edge_side)
 			{
 				case side::top:
-					m_rectangles[e.rectangle_index].setTop((position - r.y()) / r.height());
+					m_rectangles[e.rectangle_index].setTop(double(position - r.y()) / (r.height() - 1));
 					rectangles_position[e.rectangle_index].setTop(position);
 					break;
 
 				case side::bottom:
-					m_rectangles[e.rectangle_index].setBottom((position - r.y()) / r.height());
+					m_rectangles[e.rectangle_index].setBottom(double(position - r.y()) / (r.height() - 1));
 					rectangles_position[e.rectangle_index].setBottom(position);
 					break;
 
 				case side::left:
-					m_rectangles[e.rectangle_index].setLeft((position - r.x()) / r.width());
+					m_rectangles[e.rectangle_index].setLeft(double(position - r.x()) / (r.width() - 1));
 					rectangles_position[e.rectangle_index].setLeft(position);
 					break;
 
 				case side::right:
-					m_rectangles[e.rectangle_index].setRight((position - r.x()) / r.width());
+					m_rectangles[e.rectangle_index].setRight(double(position - r.x()) / (r.width() - 1));
 					rectangles_position[e.rectangle_index].setRight(position);
 					break;
 			}
 		}
 
+		if (!assert_rectangle_list_is_partition(r, rectangles_position))
+		{
+			dump_events(*p);
+			abort();
+		}
+
 		update();
 		rectangles_change(m_rectangles);
 	}
+	else
+	{
+		p->hovered.clear();
 
-	setCursor(get_cursor_shape(event->position(), r, rectangles_position, 5, 15));
+		if (auto horz_edges = hovered_edges(event->position().toPoint(), partition_edges(horizontal_edges(r, rectangles_position)), true); not horz_edges.empty())
+		{
+			p->hovered = std::move(horz_edges);
+			update();
+		}
+		else if (auto vert_edges = hovered_edges(event->position(), partition_edges(vertical_edges(r, rectangles_position)), false); not vert_edges.empty())
+		{
+			p->hovered = std::move(vert_edges);
+			update();
+		}
+		else
+		{
+			int n = hovered_rectangle(event->position().toPoint(), rectangles_position);
+		}
+	}
+
+	auto new_cursor = get_cursor_shape(event->position(), r, rectangles_position, 5, 15);
+	if (new_cursor != cursor())
+	{
+		update();
+		setCursor(new_cursor);
+	}
+
+	if (cursor() == Qt::SplitHCursor)
+	{
+		int n = hovered_rectangle(event->pos(), rectangles_position);
+		p->split_line = {event->pos().x(), rectangles_position[n].top(), event->pos().x(), rectangles_position[n].bottom()};
+		update();
+	}
+	else if (cursor() == Qt::SplitVCursor)
+	{
+		int n = hovered_rectangle(event->pos(), rectangles_position);
+		p->split_line = {rectangles_position[n].left(), event->pos().y(), rectangles_position[n].right(), event->pos().y()};
+		update();
+	}
+	else
+	{
+		p->split_line = {0, 0, 0, 0};
+	}
 }
 
 void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
+
+	p->events.emplace_back(rectangle_partitionner_private::mouse_event_type::press, event->clone());
+
 	auto r = frameRect();
 	r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
 
 	p->selection.clear();
+	p->split_line = {0, 0, 0, 0};
 
 	if (auto horz_edges = hovered_edges(event->position(), partition_edges(horizontal_edges(r, rectangles_position)), true); not horz_edges.empty())
 	{
@@ -335,9 +616,9 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 	{
 		p->selection = std::move(vert_edges);
 	}
-	else if (int n = hovered_rectangle(event->position(), rectangles_position); n >= 0)
+	else if (int n = hovered_rectangle(event->position().toPoint(), rectangles_position); n >= 0)
 	{
-		QRectF & hovered_position = rectangles_position[n];
+		QRect & hovered_position = rectangles_position[n];
 		QRectF & hovered = m_rectangles[n];
 
 		// Compute distance to edges
@@ -347,13 +628,13 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 		if (dx < 15)
 		{
 			// Split vertically
-			QRectF new_rectangle_position = hovered_position;
+			QRect new_rectangle_position = hovered_position;
 			QRectF new_rectangle = hovered;
 
 			hovered_position.setBottom(event->position().y());
 			new_rectangle_position.setTop(hovered_position.bottom());
 
-			hovered.setBottom((event->position().y() - r.y()) / r.height());
+			hovered.setBottom((event->position().y() - r.y()) / (r.height() - 1));
 			new_rectangle.setTop(hovered.bottom());
 
 			m_rectangles.push_back(new_rectangle);
@@ -361,17 +642,23 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 			m_rectangles_data.push_back(m_rectangles_data[n]);
 			update();
 			rectangles_change(m_rectangles);
+
+			if (!assert_rectangle_list_is_partition(r, rectangles_position))
+			{
+				dump_events(*p);
+				abort();
+			}
 		}
 		else if (dy < 15)
 		{
 			// Split horizontally
-			QRectF new_rectangle_position = hovered_position;
+			QRect new_rectangle_position = hovered_position;
 			QRectF new_rectangle = hovered;
 
 			hovered_position.setRight(event->position().x());
 			new_rectangle_position.setLeft(hovered_position.right());
 
-			hovered.setRight((event->position().x() - r.x()) / r.width());
+			hovered.setRight((event->position().x() - r.x()) / (r.width() - 1));
 			new_rectangle.setLeft(hovered.right());
 
 			m_rectangles.push_back(new_rectangle);
@@ -379,6 +666,12 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 			m_rectangles_data.push_back(m_rectangles_data[n]);
 			update();
 			rectangles_change(m_rectangles);
+
+			if (!assert_rectangle_list_is_partition(r, rectangles_position))
+			{
+				dump_events(*p);
+				abort();
+			}
 		}
 		else
 		{
@@ -388,8 +681,10 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 
 	if (not p->selection.empty())
 	{
-		p->min_drag_position = std::numeric_limits<double>::lowest();
-		p->max_drag_position = std::numeric_limits<double>::max();
+		p->hovered.clear();
+
+		p->min_drag_position = std::numeric_limits<int>::lowest();
+		p->max_drag_position = std::numeric_limits<int>::max();
 
 		for (auto & e: p->selection)
 		{
@@ -410,42 +705,73 @@ void rectangle_partitionner::mousePressEvent(QMouseEvent * event)
 			}
 		}
 	}
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
 }
 
 void rectangle_partitionner::mouseReleaseEvent(QMouseEvent * event)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
+	p->events.emplace_back(rectangle_partitionner_private::mouse_event_type::release, event->clone());
+
 	p->selection.clear();
 
 	// Delete empty rectangles
-	auto rectangles = m_rectangles;
-
-	auto i1 = rectangles.begin();
-	auto i2 = m_rectangles_data.begin();
+	auto i1 = m_rectangles.begin();
+	auto i2 = rectangles_position.begin();
+	auto i3 = m_rectangles_data.begin();
 
 	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
 
 	bool changed = false;
-	for (; i1 != rectangles.end();)
+	for (; i1 != m_rectangles.end();)
 	{
-		if (i1->width() < 0.001 or i1->height() < 0.001)
+		if (i2->width() <= 1 or i2->height() <= 1)
 		{
-			i1 = rectangles.erase(i1);
-			i2 = m_rectangles_data.erase(i2);
+			i1 = m_rectangles.erase(i1);
+			i2 = rectangles_position.erase(i2);
+			i3 = m_rectangles_data.erase(i3);
 			changed = true;
 		}
 		else
 		{
 			++i1;
 			++i2;
+			++i3;
 		}
 	}
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
 
 	if (changed)
-		set_rectangles(rectangles);
+	{
+		rectangles_change(m_rectangles);
+		update();
+	}
+}
+
+void rectangle_partitionner::leaveEvent(QEvent * event)
+{
+	p->split_line = {0, 0, 0, 0};
+}
+
+void rectangle_partitionner::keyPressEvent(QKeyEvent * event)
+{
+	auto r = frameRect();
+	r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
+	qDebug() << "Bounding box:" << r;
+	int n = 1;
+	for (auto & i: rectangles_position)
+	{
+		qDebug() << "Rectangle" << (n++) << ":" << i.topLeft() << "-" << i.bottomRight();
+	}
 }
 
 void rectangle_partitionner::set_rectangles(const rectangle_list & value)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
 	m_rectangles = value;
 	m_rectangles_data.resize(m_rectangles.size());
 	update_rectangles_position();
@@ -455,6 +781,7 @@ void rectangle_partitionner::set_rectangles(const rectangle_list & value)
 
 	update();
 	rectangles_change(m_rectangles);
+	assert(m_rectangles.size() == m_rectangles_data.size());
 }
 
 void rectangle_partitionner::set_selected_index(int new_index)
@@ -472,18 +799,33 @@ void rectangle_partitionner::set_selected_index(int new_index)
 
 void rectangle_partitionner::set_rectangles_data(const data_list & value)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
 	m_rectangles_data = value;
 	m_rectangles_data.resize(m_rectangles.size());
+	assert(m_rectangles.size() == m_rectangles_data.size());
+
+	update();
 }
 
 void rectangle_partitionner::set_rectangles_data(int index, QVariant value)
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
 	assert(index < m_rectangles_data.size());
 	m_rectangles_data[index] = value;
+	assert(m_rectangles.size() == m_rectangles_data.size());
+
+	update();
+}
+
+void rectangle_partitionner::set_paint(paint_function paint)
+{
+	m_paint = paint;
+	update();
 }
 
 void rectangle_partitionner::update_rectangles_position()
 {
+	assert(m_rectangles.size() == m_rectangles_data.size());
 	rectangles_position.clear();
 	rectangles_position.reserve(m_rectangles.size());
 
@@ -492,13 +834,15 @@ void rectangle_partitionner::update_rectangles_position()
 
 	for (QRectF & i: m_rectangles)
 	{
-		int x1 = r.x() + i.x() * r.width();
-		int x2 = r.x() + (i.x() + i.width()) * r.width();
+		int x1 = std::round(r.x() + i.x() * (r.width() - 1));
+		int x2 = std::round(r.x() + (i.x() + i.width()) * (r.width() - 1));
 
-		int y1 = r.y() + i.y() * r.height();
-		int y2 = r.y() + (i.y() + i.height()) * r.height();
-		rectangles_position.emplace_back(x1, y1, x2 - x1, y2 - y1);
+		int y1 = std::round(r.y() + i.y() * (r.height() - 1));
+		int y2 = std::round(r.y() + (i.y() + i.height()) * (r.height() - 1));
+		rectangles_position.emplace_back(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 	}
+	assert(m_rectangles.size() == m_rectangles_data.size());
+	assert(m_rectangles.size() == rectangles_position.size());
 }
 
 #include "moc_rectangle_partitionner.cpp"

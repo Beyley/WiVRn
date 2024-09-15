@@ -19,144 +19,144 @@
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="165"/>
+        <location filename="main_window.ui" line="164"/>
         <source>Server started</source>
         <translation>Server started</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="177"/>
+        <location filename="main_window.ui" line="176"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="188"/>
+        <location filename="main_window.ui" line="186"/>
         <source>Restart</source>
         <translation>Restart</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="199"/>
+        <location filename="main_window.ui" line="196"/>
         <source>Settings</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="228"/>
-        <location filename="main_window.ui" line="455"/>
+        <location filename="main_window.ui" line="225"/>
+        <location filename="main_window.ui" line="477"/>
         <source>For Steam games, set command to:</source>
         <translation>For Steam games, set command to:</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="246"/>
-        <location filename="main_window.ui" line="464"/>
+        <location filename="main_window.ui" line="243"/>
+        <location filename="main_window.ui" line="486"/>
         <source>Copy to clipboard</source>
         <translation>Copy to clipboard</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="337"/>
+        <location filename="main_window.ui" line="343"/>
         <source>Restarting server</source>
         <translation>Restarting server</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="413"/>
+        <location filename="main_window.ui" line="436"/>
         <source>Client connected</source>
         <translation>Client connected</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="425"/>
+        <location filename="main_window.ui" line="448"/>
         <source>Disconnect</source>
         <translation>Disconnect</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="562"/>
+        <location filename="main_window.ui" line="583"/>
         <source>Field of view</source>
         <translation>Field of view</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="733"/>
-        <source>&amp;Server settings</source>
-        <translation>&amp;Server settings</translation>
+        <location filename="main_window.ui" line="753"/>
+        <source>Server settings</source>
+        <oldsource>&amp;Server settings</oldsource>
+        <translation>Server settings</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="541"/>
+        <location filename="main_window.ui" line="774"/>
+        <source>Start server</source>
+        <oldsource>Start ser&amp;ver</oldsource>
+        <translation>Start server</translation>
+    </message>
+    <message>
+        <location filename="main_window.ui" line="782"/>
+        <source>Stop server</source>
+        <oldsource>St&amp;op server</oldsource>
+        <translation>Stop server</translation>
+    </message>
+    <message>
+        <location filename="main_window.ui" line="793"/>
+        <source>Restart server</source>
+        <oldsource>&amp;Restart server</oldsource>
+        <translation>Restart server</translation>
+    </message>
+    <message>
+        <location filename="main_window.ui" line="562"/>
         <source>Microphone</source>
         <translation>Microphone</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="645"/>
+        <location filename="main_window.ui" line="666"/>
         <source>Speaker</source>
         <translation>Speaker</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="624"/>
+        <location filename="main_window.ui" line="645"/>
         <source>Eye gaze tracking</source>
         <translation>Eye gaze tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="603"/>
+        <location filename="main_window.ui" line="624"/>
         <source>Hand tracking</source>
         <translation>Hand tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="617"/>
+        <location filename="main_window.ui" line="638"/>
         <source>Supported codecs</source>
         <translation>Supported codecs</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="659"/>
+        <location filename="main_window.ui" line="680"/>
         <source>Face tracking</source>
         <translation>Face tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="666"/>
+        <location filename="main_window.ui" line="687"/>
         <source>Available refresh rates</source>
         <translation>Available refresh rates</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="673"/>
+        <location filename="main_window.ui" line="694"/>
         <source>Eye resolution</source>
         <translation>Eye resolution</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="610"/>
+        <location filename="main_window.ui" line="631"/>
         <source>Preferred refresh rate</source>
         <translation>Preferred refresh rate</translation>
     </message>
     <message>
-        <source>&amp;Settings</source>
-        <translation type="vanished">&amp;Settings</translation>
-    </message>
-    <message>
-        <location filename="main_window.ui" line="742"/>
+        <location filename="main_window.ui" line="761"/>
         <source>&amp;About</source>
         <translation>&amp;About</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="751"/>
-        <location filename="main_window.ui" line="805"/>
+        <location filename="main_window.ui" line="769"/>
+        <location filename="main_window.ui" line="820"/>
         <source>&amp;Exit</source>
         <translation>&amp;Exit</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="756"/>
-        <source>Start server</source>
-        <translation>Start server</translation>
-    </message>
-    <message>
-        <location filename="main_window.ui" line="764"/>
-        <source>Stop server</source>
-        <translation>Stop server</translation>
-    </message>
-    <message>
-        <location filename="main_window.ui" line="775"/>
-        <source>Restart server</source>
-        <translation>Restart server</translation>
-    </message>
-    <message>
-        <location filename="main_window.ui" line="787"/>
+        <location filename="main_window.ui" line="804"/>
         <source>&amp;Show</source>
         <translation>&amp;Show</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="796"/>
+        <location filename="main_window.ui" line="812"/>
         <source>&amp;Hide</source>
         <translation>&amp;Hide</translation>
     </message>
@@ -169,67 +169,59 @@
         <translation>Settings</translation>
     </message>
     <message>
-        <source>Single encoder</source>
-        <translation type="vanished">Single encoder</translation>
+        <location filename="settings.ui" line="24"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="133"/>
+        <location filename="settings.ui" line="27"/>
+        <source>Foveation strength</source>
+        <translation>Foveation strength</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="96"/>
+        <source>Bitrate</source>
+        <oldsource>Bi&amp;trate</oldsource>
+        <translation>Bitrate</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="143"/>
+        <source>Weaker</source>
+        <translation>Weaker</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="163"/>
+        <source>Stronger</source>
+        <translation>Stronger</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="177"/>
+        <source>Automatic encoder configuration</source>
+        <translation>Automatic encoder configuration</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="238"/>
         <source>Encoder</source>
         <translation>Encoder</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="150"/>
-        <location filename="settings.ui" line="180"/>
+        <location filename="settings.ui" line="255"/>
+        <location filename="settings.ui" line="285"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <source>Multiple encoders</source>
-        <translation type="vanished">Multiple encoders</translation>
-    </message>
-    <message>
-        <source>vaapi</source>
-        <translation type="vanished">vaapi</translation>
-    </message>
-    <message>
-        <source>x264</source>
-        <translation type="vanished">x264</translation>
-    </message>
-    <message>
-        <location filename="settings.ui" line="117"/>
+        <location filename="settings.ui" line="222"/>
         <source>Codec</source>
         <translation>Codec</translation>
     </message>
     <message>
-        <source>H264</source>
-        <translation type="vanished">H264</translation>
-    </message>
-    <message>
-        <source>H265</source>
-        <oldsource>HEVC</oldsource>
-        <translation type="vanished">H265</translation>
-    </message>
-    <message>
-        <source>AV1</source>
-        <translation type="vanished">AV1</translation>
-    </message>
-    <message>
-        <location filename="settings.ui" line="70"/>
-        <source>Bitrate</source>
-        <translation>Bitrate</translation>
-    </message>
-    <message>
-        <location filename="settings.ui" line="51"/>
+        <location filename="settings.ui" line="122"/>
         <source> Mbit/s</source>
         <translation> Mbit/s</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="41"/>
-        <source>Encoder scale</source>
-        <translation>Encoder scale</translation>
-    </message>
-    <message>
-        <location filename="settings.ui" line="22"/>
+        <location filename="settings.ui" line="109"/>
         <source> %</source>
         <translation> %</translation>
     </message>
@@ -301,25 +293,10 @@
 <context>
     <name>settings</name>
     <message>
-        <location filename="settings.cpp" line="172"/>
-        <source>x264 only supports H264
-</source>
-        <oldsource>x264 only support H264
-</oldsource>
-        <translation>x264 only supports H264
-</translation>
-    </message>
-    <message>
-        <location filename="settings.cpp" line="177"/>
+        <location filename="settings.cpp" line="294"/>
         <source>Not all headsets support AV1
 </source>
         <translation>Not all headsets support AV1
-</translation>
-    </message>
-    <message>
-        <source>Not headsets support AV1
-</source>
-        <translation type="vanished">Not headsets support AV1
 </translation>
     </message>
 </context>
