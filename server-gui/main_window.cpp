@@ -23,9 +23,12 @@
 #include <QCoreApplication>
 #include <QDBusConnection>
 #include <QEvent>
+#include <QMessageBox>
 
+#include <chrono>
 #include <cmath>
 
+#include "exit_codes.h"
 #include "settings.h"
 #include "ui_main_window.h"
 #include "wivrn_server.h"
@@ -111,20 +114,25 @@ main_window::main_window()
 
 	dbus_watcher.setConnection(QDBusConnection::sessionBus());
 	dbus_watcher.addWatchedService("io.github.wivrn.Server");
-	connect(&dbus_watcher, &QDBusServiceWatcher::serviceRegistered, this, &main_window::on_server_started);
-	connect(&dbus_watcher, &QDBusServiceWatcher::serviceUnregistered, this, &main_window::on_server_finished);
+	connect(&dbus_watcher, &QDBusServiceWatcher::serviceRegistered, this, &main_window::on_server_dbus_registered);
+	connect(&dbus_watcher, &QDBusServiceWatcher::serviceUnregistered, this, &main_window::on_server_dbus_unregistered);
 
-	server_process.setProcessChannelMode(QProcess::ForwardedChannels);
+	server_process = new QProcess;
+	server_process->setProcessChannelMode(QProcess::ForwardedChannels);
+
+	server_process_timeout = new QTimer;
+	server_process_timeout->setInterval(std::chrono::seconds(5));
+	server_process_timeout->setSingleShot(true);
 
 	const QStringList services = QDBusConnection::sessionBus().interface()->registeredServiceNames();
 	if (services.contains("io.github.wivrn.Server"))
-		on_server_started();
+		on_server_dbus_registered();
 	else
 		ui->stackedWidget->setCurrentIndex((int)server_state::stopped);
 
-	// connect(&server_process, &QProcess::started, this, &main_window::on_server_started);
-	// connect(&server_process, &QProcess::finished, this, &main_window::on_server_finished);
-	connect(&server_process, &QProcess::errorOccurred, this, &main_window::on_server_error_occurred);
+	connect(server_process, &QProcess::finished, this, &main_window::on_server_finished);
+	connect(server_process, &QProcess::errorOccurred, this, &main_window::on_server_error_occurred);
+	connect(server_process_timeout, &QTimer::timeout, this, &main_window::on_server_start_timeout);
 
 	connect(ui->action_start, &QAction::triggered, this, &main_window::start_server);
 	connect(ui->action_stop, &QAction::triggered, this, &main_window::stop_server);
@@ -154,6 +162,17 @@ main_window::main_window()
 
 main_window::~main_window()
 {
+	delete server_process_timeout;
+	server_process_timeout = nullptr;
+
+	// Disconnect signals to avoid receiving signals about the server crashing
+	disconnect(server_process, &QProcess::finished, this, &main_window::on_server_finished);
+	disconnect(server_process, &QProcess::errorOccurred, this, &main_window::on_server_error_occurred);
+	server_process->terminate();
+	server_process->waitForFinished();
+	delete server_process;
+	server_process = nullptr;
+
 	delete ui;
 	ui = nullptr;
 }
@@ -279,15 +298,6 @@ void main_window::on_server_properties_changed(const QString & interface_name, c
 				field_of_view fov;
 				fovs >> fov;
 				fovs2.push_back(fov);
-
-				// fov_str.push_back(std::format("({:.1f}° \u2012 {:.1f}°) \u2a2f ({:.1f}° \u2012 {:.1f}°)",
-				//                               fov.angleLeft * 180 / M_PI,
-				//                               fov.angleRight * 180 / M_PI,
-				//                               fov.angleDown * 180 / M_PI,
-				//                               fov.angleUp * 180 / M_PI)
-				//                           .c_str());
-
-				// fov_str.push_back(tr("%1° \u2a2f %2°").arg((fov.angleRight - fov.angleLeft) * 180 / M_PI, 0, 'f', 1).arg((fov.angleUp - fov.angleDown) * 180 / M_PI, 0, 'f', 1));
 			}
 			fovs.endArray();
 
@@ -299,8 +309,6 @@ void main_window::on_server_properties_changed(const QString & interface_name, c
 				                                         .arg((fovs2[1].angleRight - fovs2[1].angleLeft) * 180 / M_PI, 0, 'f', 1)
 				                                         .arg((fovs2[1].angleUp - fovs2[1].angleDown) * 180 / M_PI, 0, 'f', 1));
 			}
-
-			// ui->label_field_of_view->setText(fov_str.join(", "));
 		}
 
 		if (changed_properties.contains("HandTracking"))
@@ -381,8 +389,10 @@ void main_window::refresh_server_properties()
 	});
 }
 
-void main_window::on_server_started()
+void main_window::on_server_dbus_registered()
 {
+	server_process_timeout->stop();
+
 	if (server)
 		server->deleteLater();
 	if (server_properties)
@@ -418,7 +428,7 @@ void main_window::on_server_started()
 	}
 }
 
-void main_window::on_server_finished()
+void main_window::on_server_dbus_unregistered()
 {
 	if (server)
 		server->deleteLater();
@@ -446,14 +456,87 @@ void main_window::on_server_finished()
 
 void main_window::on_server_error_occurred(QProcess::ProcessError error)
 {
-	if (ui)
+	qDebug() << "on_server_error_occurred" << error;
+	// server_process_timeout.stop();
+
+	ui->stackedWidget->setCurrentIndex((int)server_state::stopped);
+	ui->action_start->setEnabled(true);
+	ui->action_restart->setEnabled(false);
+	ui->action_stop->setEnabled(false);
+	ui->action_settings->setEnabled(false);
+
+	ui->button_start->setEnabled(true);
+
+	QString error_message;
+	switch (error)
 	{
-		ui->stackedWidget->setCurrentIndex((int)server_state::stopped);
-		ui->action_start->setEnabled(true);
-		ui->action_restart->setEnabled(false);
-		ui->action_stop->setEnabled(false);
-		ui->action_settings->setEnabled(false);
+		case QProcess::ProcessError::FailedToStart:
+			error_message = tr("Failed to start");
+			break;
+		case QProcess::ProcessError::Crashed:
+			error_message = tr("Crashed");
+			break;
+		case QProcess::ProcessError::Timedout:
+			error_message = tr("Time out");
+			break;
+		case QProcess::ProcessError::ReadError:
+			error_message = tr("Read error");
+			break;
+		case QProcess::ProcessError::WriteError:
+			error_message = tr("Write error");
+			break;
+		case QProcess::ProcessError::UnknownError:
+			error_message = tr("Unknown error");
+			break;
 	}
+	QMessageBox msgbox{QMessageBox::Critical, tr("Server error"), tr("Failed to start server:\n%1").arg(error_message), QMessageBox::Close, this};
+	msgbox.setModal(true);
+	msgbox.exec();
+}
+
+void main_window::on_server_finished(int exit_code, QProcess::ExitStatus status)
+{
+	qDebug() << "on_server_finished" << exit_code << status;
+	// server_process_timeout.stop();
+
+	ui->stackedWidget->setCurrentIndex((int)server_state::stopped);
+	ui->action_start->setEnabled(true);
+	ui->action_restart->setEnabled(false);
+	ui->action_stop->setEnabled(false);
+	ui->action_settings->setEnabled(false);
+
+	ui->button_start->setEnabled(true);
+
+	if (exit_code != 0)
+	{
+		QString error_message = tr("Unknown error (%1), check logs").arg(exit_code);
+		switch (exit_code)
+		{
+			case wivrn_exit_code::cannot_connect_to_avahi:
+				error_message = tr("Cannot connect to avahi, make sure avahi-daemon service is started");
+				break;
+			case wivrn_exit_code::cannot_create_pipe:
+			case wivrn_exit_code::cannot_create_socketpair:
+				error_message = tr("Insufficient system resources");
+				break;
+			case wivrn_exit_code::success:
+			case wivrn_exit_code::unknown_error:
+				break;
+		}
+
+		QMessageBox msgbox{QMessageBox::Critical, tr("Server error"), tr("Server crashed:\n%1").arg(error_message), QMessageBox::Close, this};
+		msgbox.setModal(true);
+		msgbox.exec();
+	}
+}
+
+void main_window::on_server_start_timeout()
+{
+	qDebug() << "on_server_start_timeout";
+
+	QMessageBox msgbox{QMessageBox::Critical, tr("Server error"), tr("Timeout starting server"), QMessageBox::Close, this};
+	msgbox.setModal(true);
+	msgbox.exec();
 }
 
 void main_window::on_action_settings()
@@ -477,7 +560,9 @@ void main_window::on_action_settings()
 void main_window::start_server()
 {
 	// TODO activate by dbus?
-	server_process.start(QCoreApplication::applicationDirPath() + "/wivrn-server");
+	server_process->start(QCoreApplication::applicationDirPath() + "/wivrn-server");
+	server_process_timeout->start();
+
 	ui->button_start->setEnabled(false);
 	ui->action_start->setEnabled(false);
 }

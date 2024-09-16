@@ -45,6 +45,6 @@ public:
 
 	void on_settings_changed();
 	void on_encoder_changed();
-	void on_auto_encoder_config_changed();
 	void save_settings();
+	void restore_defaults();
 };

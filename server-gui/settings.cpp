@@ -25,6 +25,7 @@
 #include <QFile>
 #include <QJsonObject>
 #include <QPainter>
+#include <QPushButton>
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QToolTip>
@@ -133,7 +134,22 @@ settings::settings(main_window * parent) :
 	}
 	else
 	{
-		for (QJsonValue i: json_doc["encoders"].toArray())
+		auto encoders = json_doc.object().find("encoders");
+
+		if (encoders->isArray())
+		{
+			ui->radio_auto_encoder->setChecked(false);
+			ui->radio_manual_encoder->setChecked(true);
+		}
+		else
+		{
+			ui->radio_auto_encoder->setChecked(true);
+			ui->radio_manual_encoder->setChecked(false);
+
+			encoders = json_doc.object().find("encoders.disabled");
+		}
+
+		for (QJsonValue i: encoders->toArray())
 		{
 			int encoder = encoder_id_from_string(i["encoder"].toString("auto").toLower().toStdString());
 			int codec = codec_id_from_string(i["codec"].toString("auto").toLower().toStdString());
@@ -150,10 +166,8 @@ settings::settings(main_window * parent) :
 
 	if (rectangles.empty())
 	{
-		ui->checkbox_automatic_encoder_config->setChecked(true);
-
 		rectangles.push_back(QRectF(0, 0, 1, 1));
-		std::pair<std::string, std::string> config{"auto", "auto"};
+		std::pair<int, int> config{0, 0};
 		encoder_config.push_back(QVariant::fromValue(config));
 	}
 
@@ -163,8 +177,8 @@ settings::settings(main_window * parent) :
 
 	if (json_doc["scale"].isDouble())
 	{
-		ui->slider_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
-		ui->spin_foveation->setValue((1 - json_doc["scale"].toDouble(1)) * 100);
+		ui->slider_foveation->setValue(std::round((1 - json_doc["scale"].toDouble(1)) * 100));
+		ui->spin_foveation->setValue(std::round((1 - json_doc["scale"].toDouble(1)) * 100));
 		ui->radio_auto_foveation->setChecked(false);
 		ui->radio_manual_foveation->setChecked(true);
 	}
@@ -182,15 +196,15 @@ settings::settings(main_window * parent) :
 
 	connect(ui->encoder, &QComboBox::currentIndexChanged, this, &settings::on_encoder_changed);
 	connect(ui->encoder, &QComboBox::currentIndexChanged, this, &settings::on_settings_changed);
-	connect(ui->checkbox_automatic_encoder_config, &QCheckBox::clicked, this, &settings::on_auto_encoder_config_changed);
 	connect(ui->codec, &QComboBox::currentIndexChanged, this, &settings::on_settings_changed);
 	connect(ui->bitrate, &QDoubleSpinBox::valueChanged, this, &settings::on_settings_changed);
 	connect(ui->slider_foveation, &QSlider::valueChanged, this, &settings::on_settings_changed);
 	connect(ui->spin_foveation, &QSpinBox::valueChanged, this, &settings::on_settings_changed);
 
-	connect(ui->foveation_info, &QPushButton::clicked, this, [&]() { QToolTip::showText(ui->radio_manual_foveation->pos(), ui->radio_manual_foveation->toolTip(), ui->radio_manual_foveation); });
+	// connect(ui->foveation_info, &QPushButton::clicked, this, [&]() { QToolTip::showText(ui->radio_manual_foveation->pos(), ui->radio_manual_foveation->toolTip(), ui->radio_manual_foveation); });
 
 	connect(this, &QDialog::accepted, this, &settings::save_settings);
+	connect(ui->buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &settings::restore_defaults);
 
 	ui->partitionner->set_paint([&](QPainter & painter, QRect rect, const QVariant & data, int index, bool selected) {
 		if (selected)
@@ -221,9 +235,6 @@ settings::settings(main_window * parent) :
 		painter.setFont(font);
 	});
 
-	// Enable/disable the encoder configuration widgets
-	on_auto_encoder_config_changed();
-
 	// Update the compatible codecs
 	on_encoder_changed();
 
@@ -235,14 +246,6 @@ settings::~settings()
 {
 	delete ui;
 	ui = nullptr;
-}
-
-void settings::on_auto_encoder_config_changed()
-{
-	bool checked = ui->checkbox_automatic_encoder_config->isChecked();
-	ui->partitionner->setDisabled(checked);
-	ui->encoder->setDisabled(checked);
-	ui->codec->setDisabled(checked);
 }
 
 void settings::on_encoder_changed()
@@ -301,7 +304,7 @@ void settings::on_settings_changed()
 
 	if (codec == 3 /* av1 */)
 	{
-		status += tr("Not all headsets support AV1\n");
+		status += tr("Not all headsets and GPUs support AV1\n");
 	}
 
 	ui->partitionner->set_rectangles_data(ui->partitionner->selected_index(), QVariant::fromValue(std::pair(encoder, codec)));
@@ -317,49 +320,76 @@ void settings::selected_rectangle_changed(int index)
 	ui->codec->setCurrentIndex(codec);
 }
 
+void settings::restore_defaults()
+{
+	ui->bitrate->setValue(50);
+	ui->radio_auto_foveation->setChecked(true);
+	ui->radio_auto_encoder->setChecked(true);
+
+	std::vector<QRectF> rectangles;
+	std::vector<QVariant> encoder_config;
+
+	rectangles.push_back(QRectF(0, 0, 1, 1));
+	std::pair<int, int> config{0, 0};
+	encoder_config.push_back(QVariant::fromValue(config));
+
+	ui->partitionner->set_rectangles(rectangles);
+	ui->partitionner->set_rectangles_data(encoder_config);
+	ui->partitionner->set_selected_index(0);
+}
+
 void settings::save_settings()
 {
 	QJsonObject json = json_doc.object();
 
-	if (ui->radio_auto_foveation->isChecked())
-	{
-		auto it = json.find("scale");
-		if (it != json.end())
-			json.erase(it);
-	}
-	else
-	{
+	// Remove all optional keys that might not be overwritten
+	auto it = json.find("scale");
+	if (it != json.end())
+		json.erase(it);
+
+	it = json.find("encoders.disabled");
+	if (it != json.end())
+		json.erase(it);
+
+	it = json.find("encoders");
+	if (it != json.end())
+		json.erase(it);
+
+	if (not ui->radio_auto_foveation->isChecked())
 		json["scale"] = 1 - ui->slider_foveation->value() / 100.0;
-	}
 
 	json["bitrate"] = ui->bitrate->value() * 1'000'000;
 
 	QJsonArray encoders;
 
-	if (not ui->checkbox_automatic_encoder_config->isChecked())
+	const auto & rect = ui->partitionner->rectangles();
+	const auto & data = ui->partitionner->rectangles_data();
+
+	for (int i = 0, n = rect.size(); i < n; i++)
 	{
-		const auto & rect = ui->partitionner->rectangles();
-		const auto & data = ui->partitionner->rectangles_data();
+		QJsonObject encoder;
+		auto [encoder_id, codec_id] = data[i].value<std::pair<int, int>>();
 
-		for (int i = 0, n = rect.size(); i < n; i++)
-		{
-			QJsonObject encoder;
-			auto [encoder_id, codec_id] = data[i].value<std::pair<int, int>>();
+		encoder["encoder"] = QString::fromLatin1(encoder_from_id(encoder_id));
+		encoder["codec"] = QString::fromLatin1(codec_from_id(codec_id));
+		encoder["width"] = rect[i].width();
+		encoder["height"] = rect[i].height();
+		encoder["offset_x"] = rect[i].x();
+		encoder["offset_y"] = rect[i].y();
 
-			encoder["encoder"] = QString::fromLatin1(encoder_from_id(encoder_id));
-			encoder["codec"] = QString::fromLatin1(codec_from_id(codec_id));
-			encoder["width"] = rect[i].width();
-			encoder["height"] = rect[i].height();
-			encoder["offset_x"] = rect[i].x();
-			encoder["offset_y"] = rect[i].y();
+		// TODO encoder groups
 
-			// TODO encoder groups
-
-			encoders.push_back(encoder);
-		}
+		encoders.push_back(encoder);
 	}
 
-	json["encoders"] = encoders;
+	// If there is only one automatic encoder, don't save it'
+	if (encoders.size() != 1 or encoders[0].toObject()["codec"].toString() != "auto" or encoders[0].toObject()["encoder"].toString() != "auto")
+	{
+		if (ui->radio_manual_encoder->isChecked())
+			json["encoders"] = encoders;
+		else
+			json["encoders.disabled"] = encoders;
+	}
 
 	parent->set_configuration(QString::fromUtf8(QJsonDocument(json).toJson()));
 }

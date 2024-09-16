@@ -22,7 +22,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_stopped">
        <property name="sizePolicy">
@@ -279,6 +279,13 @@
          </layout>
         </item>
         <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the WiVRn app on your headset and connect to this server.&lt;/p&gt;&lt;p&gt;If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer_6">
           <property name="orientation">
            <enum>Qt::Orientation::Vertical</enum>
@@ -474,7 +481,9 @@
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>For Steam games, set command to:</string>
+           <string>You can now start a VR app from this computer.
+
+For Steam games, set command to:</string>
           </property>
          </widget>
         </item>
@@ -537,8 +546,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>168</width>
-             <height>254</height>
+             <width>876</width>
+             <height>335</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout">
@@ -750,7 +759,7 @@
     <iconset theme="preferences-system-symbolic"/>
    </property>
    <property name="text">
-    <string>Server settings</string>
+    <string>Ser&amp;ver settings</string>
    </property>
   </action>
   <action name="action_about">
@@ -771,7 +780,7 @@
   </action>
   <action name="action_start">
    <property name="text">
-    <string>Start server</string>
+    <string>&amp;Start server</string>
    </property>
   </action>
   <action name="action_stop">
@@ -779,7 +788,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Stop server</string>
+    <string>St&amp;op server</string>
    </property>
    <property name="visible">
     <bool>true</bool>
@@ -790,7 +799,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Restart server</string>
+    <string>&amp;Restart server</string>
    </property>
    <property name="visible">
     <bool>true</bool>

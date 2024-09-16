@@ -25,6 +25,7 @@
 #include <QMenu>
 #include <QProcess>
 #include <QSystemTrayIcon>
+#include <QTimer>
 
 Q_DECLARE_LOGGING_CATEGORY(wivrn_log_category)
 
@@ -56,7 +57,8 @@ class main_window : public QMainWindow
 	QAction action_hide;
 	QAction action_exit;
 
-	QProcess server_process;
+	QProcess * server_process;
+	QTimer * server_process_timeout;
 
 	QDBusServiceWatcher dbus_watcher;
 	QDBusPendingCallWatcher * get_all_properties_call_watcher = nullptr;
@@ -85,9 +87,11 @@ public:
 	void set_configuration(const QString & new_configuration);
 
 private:
-	void on_server_started();
-	void on_server_finished();
+	void on_server_dbus_registered();
+	void on_server_dbus_unregistered();
+	void on_server_finished(int exit_code, QProcess::ExitStatus status);
 	void on_server_error_occurred(QProcess::ProcessError error);
+	void on_server_start_timeout();
 	void on_server_properties_changed(const QString & interface_name, const QVariantMap & changed_properties, const QStringList & invalidated_properties);
 
 	void on_action_settings();

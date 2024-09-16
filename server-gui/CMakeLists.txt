@@ -2,8 +2,10 @@ qt_add_executable(wivrn-server-gui
         main.cpp
         main_window.cpp
         main_window.h
+        main_window.ui
         settings.cpp
         settings.h
+        settings.ui
         rectangle_partitionner.cpp
         rectangle_partitionner.h
         ../server-gui.qrc
@@ -18,6 +20,7 @@ target_compile_features(wivrn-server-gui PRIVATE cxx_std_20)
 target_include_directories(wivrn-server-gui PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(wivrn-server-gui PRIVATE
+        wivrn-common
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
