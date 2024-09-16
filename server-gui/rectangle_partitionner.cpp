@@ -772,9 +772,22 @@ void rectangle_partitionner::keyPressEvent(QKeyEvent * event)
 void rectangle_partitionner::set_rectangles(const rectangle_list & value)
 {
 	assert(m_rectangles.size() == m_rectangles_data.size());
+	auto old_value = m_rectangles;
+
 	m_rectangles = value;
-	m_rectangles_data.resize(m_rectangles.size());
 	update_rectangles_position();
+
+	auto r = frameRect();
+	r.adjust(frameWidth(), frameWidth(), -2 * frameWidth(), -2 * frameWidth());
+	if (not assert_rectangle_list_is_partition(r, rectangles_position))
+	{
+		m_rectangles = old_value;
+		update_rectangles_position();
+
+		throw std::runtime_error("Invalid partitionning");
+	}
+
+	m_rectangles_data.resize(m_rectangles.size());
 
 	if (m_selected_index >= m_rectangles.size())
 		set_selected_index(m_rectangles.size() - 1);
@@ -825,7 +838,6 @@ void rectangle_partitionner::set_paint(paint_function paint)
 
 void rectangle_partitionner::update_rectangles_position()
 {
-	assert(m_rectangles.size() == m_rectangles_data.size());
 	rectangles_position.clear();
 	rectangles_position.reserve(m_rectangles.size());
 
@@ -841,7 +853,6 @@ void rectangle_partitionner::update_rectangles_position()
 		int y2 = std::round(r.y() + (i.y() + i.height()) * (r.height() - 1));
 		rectangles_position.emplace_back(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 	}
-	assert(m_rectangles.size() == m_rectangles_data.size());
 	assert(m_rectangles.size() == rectangles_position.size());
 }
 

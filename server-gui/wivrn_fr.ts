@@ -400,70 +400,70 @@ Foveation</extracomment>
         <translation>Impossible de démarrer</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="477"/>
+        <location filename="main_window.cpp" line="484"/>
         <source>Crashed</source>
         <translation>Planté</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="480"/>
+        <location filename="main_window.cpp" line="487"/>
         <source>Time out</source>
         <translation>Délai d&apos;attente dépassé</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="483"/>
+        <location filename="main_window.cpp" line="490"/>
         <source>Read error</source>
         <translation>Erreur de lecture</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="486"/>
+        <location filename="main_window.cpp" line="493"/>
         <source>Write error</source>
         <oldsource>write error</oldsource>
         <translation>Erreur d&apos;écriture</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="489"/>
+        <location filename="main_window.cpp" line="496"/>
         <source>Unknown error</source>
         <translation>Erreur inconnue</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="492"/>
-        <location filename="main_window.cpp" line="527"/>
-        <location filename="main_window.cpp" line="537"/>
+        <location filename="main_window.cpp" line="499"/>
+        <location filename="main_window.cpp" line="534"/>
+        <location filename="main_window.cpp" line="544"/>
         <source>Server error</source>
         <translation>Erreur du serveur</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="492"/>
+        <location filename="main_window.cpp" line="499"/>
         <source>Failed to start server:
 %1</source>
         <translation>Impossible de démarrer le serveur:
 %1</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="512"/>
+        <location filename="main_window.cpp" line="519"/>
         <source>Unknown error (%1), check logs</source>
         <translation>Erreur inconnue (%1), vérifier les logs</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="516"/>
+        <location filename="main_window.cpp" line="523"/>
         <source>Cannot connect to avahi, make sure avahi-daemon service is started</source>
         <oldsource>Cannot connect to avahi, make sure avahi_daemon.service is started</oldsource>
         <translation>Impossible de se connecter à avahi, vérifiez que le service avahi-daemon est démarré</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="520"/>
+        <location filename="main_window.cpp" line="527"/>
         <source>Insufficient system resources</source>
         <translation>Ressources système insuffisantes</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="527"/>
+        <location filename="main_window.cpp" line="534"/>
         <source>Server crashed:
 %1</source>
         <translation>Le serveur a planté:
 %1</translation>
     </message>
     <message>
-        <location filename="main_window.cpp" line="537"/>
+        <location filename="main_window.cpp" line="544"/>
         <source>Timeout starting server</source>
         <translation>Délai d&apos;attente dépassé lors du démarrage du serveur</translation>
     </message>
@@ -477,7 +477,17 @@ Foveation</extracomment>
 </translation>
     </message>
     <message>
-        <location filename="settings.cpp" line="307"/>
+        <location filename="settings.cpp" line="181"/>
+        <source>Invalid settings</source>
+        <translation>Paramètres invalides</translation>
+    </message>
+    <message>
+        <location filename="settings.cpp" line="181"/>
+        <source>The encoder configuration is invalid, the default values will be restored.</source>
+        <translation>La configuration des encodeurs est invalide, les valeurs par défaut seront restaurées.</translation>
+    </message>
+    <message>
+        <location filename="settings.cpp" line="329"/>
         <source>Not all headsets and GPUs support AV1
 </source>
         <translation>Tous les casques et GPUs ne supportent pas AV1

@@ -24,6 +24,7 @@
 
 #include <QFile>
 #include <QJsonObject>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPushButton>
 #include <QStandardItemModel>
@@ -171,7 +172,28 @@ settings::settings(main_window * parent) :
 		encoder_config.push_back(QVariant::fromValue(config));
 	}
 
-	ui->partitionner->set_rectangles(rectangles);
+	try
+	{
+		ui->partitionner->set_rectangles(rectangles);
+	}
+	catch (...)
+	{
+		QMessageBox msgbox{QMessageBox::Information, tr("Invalid settings"), tr("The encoder configuration is invalid, the default values will be restored."), QMessageBox::Close, this};
+		msgbox.exec();
+
+		ui->radio_auto_encoder->setChecked(true);
+		ui->radio_manual_encoder->setChecked(false);
+
+		rectangles.clear();
+		encoder_config.clear();
+
+		rectangles.push_back(QRectF(0, 0, 1, 1));
+		ui->partitionner->set_rectangles(rectangles);
+
+		std::pair<int, int> config{0, 0};
+		encoder_config.push_back(QVariant::fromValue(config));
+	}
+
 	ui->partitionner->set_rectangles_data(encoder_config);
 	ui->partitionner->set_selected_index(0);
 
