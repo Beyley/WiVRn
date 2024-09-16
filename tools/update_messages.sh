@@ -14,3 +14,5 @@ do
 done
 
 rm $WIVRN_POT
+
+lupdate server-gui/*.{cpp,ui} -ts server-gui/wivrn_*.ts
