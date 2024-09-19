@@ -67,6 +67,7 @@ class main_window : public QMainWindow
 	int mic_sample_rate = 0;
 	int speakers_channels = 0;
 	int speakers_sample_rate = 0;
+	QString published_hostname;
 
 	QString configuration;
 
@@ -80,7 +81,7 @@ public:
 
 	Q_PROPERTY(QString configuration READ get_configuration WRITE set_configuration)
 
-	const QString & get_configuration()
+	QString get_configuration()
 	{
 		return configuration;
 	}
