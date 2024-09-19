@@ -80,6 +80,7 @@ android {
                           '-DWIVRN_USE_SYSTEM_FREETYPE=OFF',
                           '-DWIVRN_BUILD_CLIENT=ON',
                           '-DWIVRN_BUILD_SERVER=OFF',
+                          '-DWIVRN_BUILD_SERVER_GUI=OFF',
                           '-DWIVRN_WERROR=ON'
                 resValue "string", "app_name", "WiVRn"
             }
