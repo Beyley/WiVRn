@@ -45,32 +45,37 @@
     </message>
     <message>
         <location filename="main_window.ui" line="243"/>
-        <location filename="main_window.ui" line="495"/>
+        <location filename="main_window.ui" line="497"/>
         <source>Copy to clipboard</source>
         <translation>Copy to clipboard</translation>
     </message>
     <message>
         <location filename="main_window.ui" line="284"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the WiVRn app on your headset and connect to this server.&lt;/p&gt;&lt;p&gt;If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the WiVRn app on your headset and connect to this server.&lt;/p&gt;&lt;p&gt;If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>Start the WiVRn app on your headset and connect to this server.
+
+If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.</source>
+        <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the WiVRn app on your headset and connect to this server.&lt;/p&gt;&lt;p&gt;If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
+        <translation>Start the WiVRn app on your headset and connect to this server.
+
+If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="350"/>
+        <location filename="main_window.ui" line="352"/>
         <source>Restarting server</source>
         <translation>Restarting server</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="443"/>
+        <location filename="main_window.ui" line="445"/>
         <source>Client connected</source>
         <translation>Client connected</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="455"/>
+        <location filename="main_window.ui" line="457"/>
         <source>Disconnect</source>
         <translation>Disconnect</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="484"/>
+        <location filename="main_window.ui" line="486"/>
         <source>You can now start a VR app from this computer.
 
 For Steam games, set command to:</source>
@@ -79,101 +84,96 @@ For Steam games, set command to:</source>
 For Steam games, set command to:</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="592"/>
+        <location filename="main_window.ui" line="594"/>
         <source>Field of view</source>
         <translation>Field of view</translation>
     </message>
     <message>
-        <source>Server settings</source>
-        <oldsource>Ser&amp;ver settings</oldsource>
-        <translation type="vanished">Server settings</translation>
-    </message>
-    <message>
-        <location filename="main_window.ui" line="783"/>
+        <location filename="main_window.ui" line="785"/>
         <source>&amp;Start server</source>
         <oldsource>Start server</oldsource>
         <translation>&amp;Start server</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="791"/>
+        <location filename="main_window.ui" line="793"/>
         <source>St&amp;op server</source>
         <oldsource>Stop server</oldsource>
         <translation>St&amp;op server</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="802"/>
+        <location filename="main_window.ui" line="804"/>
         <source>&amp;Restart server</source>
         <oldsource>Restart server</oldsource>
         <translation>&amp;Restart server</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="571"/>
+        <location filename="main_window.ui" line="573"/>
         <source>Microphone</source>
         <translation>Microphone</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="675"/>
+        <location filename="main_window.ui" line="677"/>
         <source>Speaker</source>
         <translation>Speaker</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="654"/>
+        <location filename="main_window.ui" line="656"/>
         <source>Eye gaze tracking</source>
         <translation>Eye gaze tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="633"/>
+        <location filename="main_window.ui" line="635"/>
         <source>Hand tracking</source>
         <translation>Hand tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="647"/>
+        <location filename="main_window.ui" line="649"/>
         <source>Supported codecs</source>
         <translation>Supported codecs</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="689"/>
+        <location filename="main_window.ui" line="691"/>
         <source>Face tracking</source>
         <translation>Face tracking</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="696"/>
+        <location filename="main_window.ui" line="698"/>
         <source>Available refresh rates</source>
         <translation>Available refresh rates</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="703"/>
+        <location filename="main_window.ui" line="705"/>
         <source>Eye resolution</source>
         <translation>Eye resolution</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="640"/>
+        <location filename="main_window.ui" line="642"/>
         <source>Preferred refresh rate</source>
         <translation>Preferred refresh rate</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="762"/>
+        <location filename="main_window.ui" line="764"/>
         <source>Ser&amp;ver settings</source>
         <translation>Ser&amp;ver settings</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="770"/>
+        <location filename="main_window.ui" line="772"/>
         <source>&amp;About</source>
         <translation>&amp;About</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="778"/>
-        <location filename="main_window.ui" line="829"/>
+        <location filename="main_window.ui" line="780"/>
+        <location filename="main_window.ui" line="831"/>
         <source>&amp;Exit</source>
         <translation>&amp;Exit</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="813"/>
+        <location filename="main_window.ui" line="815"/>
         <source>&amp;Show</source>
         <translation>&amp;Show</translation>
     </message>
     <message>
-        <location filename="main_window.ui" line="821"/>
+        <location filename="main_window.ui" line="823"/>
         <source>&amp;Hide</source>
         <translation>&amp;Hide</translation>
     </message>
@@ -184,13 +184,6 @@ For Steam games, set command to:</translation>
         <location filename="settings.ui" line="14"/>
         <source>Settings</source>
         <translation>Settings</translation>
-    </message>
-    <message>
-        <source>Automatic</source>
-        <extracomment>Encoder
-----------
-Foveation</extracomment>
-        <translation type="vanished">Automatic</translation>
     </message>
     <message>
         <location filename="settings.ui" line="38"/>
@@ -230,17 +223,6 @@ Foveation</extracomment>
         <translation>Manual</translation>
     </message>
     <message>
-        <source>Manual</source>
-        <extracomment>Encoder
-----------
-Foveation</extracomment>
-        <translation type="vanished">Manual</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="477"/>
         <source>Manual</source>
         <comment>Foveation</comment>
@@ -252,19 +234,6 @@ Foveation</extracomment>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A stronger foveation makes the image sharper in the center than in the periphery and makes the decoding faster. This is better for fast paced games.&lt;/p&gt;&lt;p&gt;A weaker foveation gives a uniform sharpness in the whole image.&lt;/p&gt;&lt;p&gt;The recommended values are between 20% and 50% for headsets without eye tracking and between 50% and 70% for headsets with eye tracking.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <source>Foveation strength</source>
-        <translation type="vanished">Foveation strength</translation>
-    </message>
-    <message>
-        <source>Bitrate</source>
-        <oldsource>Bi&amp;trate</oldsource>
-        <translation type="vanished">Bitrate</translation>
-    </message>
-    <message>
-        <source>Auto&amp;matically choose foveation strength</source>
-        <translation type="vanished">Auto&amp;matically choose foveation strength</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="53"/>
         <source>Weaker</source>
         <translation>Weaker</translation>
@@ -273,14 +242,6 @@ Foveation</extracomment>
         <location filename="settings.ui" line="73"/>
         <source>Stronger</source>
         <translation>Stronger</translation>
-    </message>
-    <message>
-        <source>Manuall&amp;y choose foveation strength</source>
-        <translation type="vanished">Manuall&amp;y choose foveation strength</translation>
-    </message>
-    <message>
-        <source>Automatic encoder configuration</source>
-        <translation type="vanished">Automatic encoder configuration</translation>
     </message>
     <message>
         <location filename="settings.ui" line="169"/>
@@ -395,6 +356,15 @@ Foveation</extracomment>
         <translation>N/A</translation>
     </message>
     <message>
+        <location filename="main_window.cpp" line="375"/>
+        <source>Start the WiVRn app on your headset and connect to &quot;%1&quot;.
+
+If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.</source>
+        <translation>Start the WiVRn app on your headset and connect to &quot;%1&quot;.
+
+If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.</translation>
+    </message>
+    <message>
         <location filename="main_window.cpp" line="481"/>
         <source>Failed to start</source>
         <translation>Failed to start</translation>
@@ -470,12 +440,6 @@ Foveation</extracomment>
 </context>
 <context>
     <name>settings</name>
-    <message>
-        <source>Not all headsets support AV1
-</source>
-        <translation type="vanished">Not all headsets support AV1
-</translation>
-    </message>
     <message>
         <location filename="settings.cpp" line="181"/>
         <source>Invalid settings</source>

@@ -368,6 +368,13 @@ void main_window::on_server_properties_changed(const QString & interface_name, c
 			ui->label_steam_command_2->setText(changed_properties["SteamCommand"].toString());
 		}
 
+		if (changed_properties.contains("PublishedHostname"))
+		{
+			published_hostname = changed_properties["PublishedHostname"].toString();
+
+			ui->label_how_to_connect->setText(tr("Start the WiVRn app on your headset and connect to \"%1\".\n\nIf the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.").arg(published_hostname));
+		}
+
 		if (changed_properties.contains("SupportedCodecs"))
 			ui->label_codecs->setText(changed_properties["SupportedCodecs"].toStringList().join(", "));
 	}

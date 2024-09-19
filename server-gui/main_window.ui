@@ -279,9 +279,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_5">
+         <widget class="QLabel" name="label_how_to_connect">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start the WiVRn app on your headset and connect to this server.&lt;/p&gt;&lt;p&gt;If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>Start the WiVRn app on your headset and connect to this server.
+
+If the server is not visible or the connection fails, check that port 5353 (UDP) and 9757 (TCP and UDP) are open in your firewall.</string>
           </property>
          </widget>
         </item>
