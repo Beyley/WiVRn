@@ -159,7 +159,7 @@ static std::string steam_command()
 	return "PRESSURE_VESSEL_FILESYSTEMS_RW=" + pressure_vessel_filesystems_rw + " %command%";
 }
 
-int inner_main(int argc, char * argv[], bool use_systemd, bool show_instructions)
+int inner_main(int argc, char * argv[], bool use_systemd, bool show_instructions, bool do_fork)
 {
 	std::cerr << "WiVRn " << xrt::drivers::wivrn::git_version << " starting" << std::endl;
 
@@ -232,7 +232,7 @@ int inner_main(int argc, char * argv[], bool use_systemd, bool show_instructions
 		pid_t client_pid = fork_application();
 #endif
 
-		pid_t server_pid = fork();
+		pid_t server_pid = do_fork ? fork() : 0;
 
 		if (server_pid < 0)
 		{
@@ -241,17 +241,20 @@ int inner_main(int argc, char * argv[], bool use_systemd, bool show_instructions
 		}
 		if (server_pid == 0)
 		{
-			// Unmask SIGTERM, keep SIGINT masked
-			sigset_t sigint_mask;
-			sigemptyset(&sigint_mask);
-			sigaddset(&sigint_mask, SIGTERM);
-			sigprocmask(SIG_UNBLOCK, &sigint_mask, nullptr);
-			close(sigint_fd);
+			if (do_fork)
+			{
+				// Unmask SIGTERM, keep SIGINT masked
+				sigset_t sigint_mask;
+				sigemptyset(&sigint_mask);
+				sigaddset(&sigint_mask, SIGTERM);
+				sigprocmask(SIG_UNBLOCK, &sigint_mask, nullptr);
+				close(sigint_fd);
 
-			// Redirect stdin
-			dup2(pipe_fds[0], 0);
-			close(pipe_fds[0]);
-			close(pipe_fds[1]);
+				// Redirect stdin
+				dup2(pipe_fds[0], 0);
+				close(pipe_fds[0]);
+				close(pipe_fds[1]);
+			}
 
 			setenv("LISTEN_PID", std::to_string(getpid()).c_str(), true);
 
@@ -406,6 +409,7 @@ int main(int argc, char * argv[])
 	bool use_systemd = false;
 	app.add_option("-f", config_file, "configuration file")->option_text("FILE")->check(CLI::ExistingFile);
 	auto no_instructions = app.add_flag("--no-instructions")->group("");
+	auto no_fork = app.add_flag("--no-fork")->description("disable fork to serve connection")->group("Debug");
 #ifdef WIVRN_USE_SYSTEMD
 	// --application should only be used from wivrn-application unit file
 	auto app_flag = app.add_flag("--application")->group("");
@@ -423,7 +427,7 @@ int main(int argc, char * argv[])
 #endif
 	try
 	{
-		return inner_main(argc, argv, use_systemd, not *no_instructions);
+		return inner_main(argc, argv, use_systemd, not *no_instructions, not *no_fork);
 	}
 	catch (std::exception & e)
 	{
